@@ -1,0 +1,218 @@
+#include <WiFi.h>
+#include <ESPAsyncWebServer.h>
+#include <AsyncTCP.h>
+
+// Your Wi-Fi credentials
+const char *ssid = "Delphine";
+const char *password = "6633343490261373";
+
+// Create an instance of the server
+AsyncWebServer server(80);
+
+// Simulated sensor data for demonstration
+float sensor1 = 25.5;
+float sensor2 = 30.2;
+float sensor3 = 18.9;
+
+// HTML page to serve
+const char *htmlPage = R"rawliteral(
+
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>ESP32 Tile Dashboard with Sensor Controls</title>
+    <style>
+      body { font-family: Arial, sans-serif; }
+      .tile {
+        width: 200px;
+        height: 200px;
+        border: 2px solid #ccc;
+        display: inline-block;
+        padding: 15px;
+        text-align: center;
+        position: absolute; /* Allow movement */
+        cursor: pointer;
+        background-color:rgb(199, 199, 199);
+        border-radius: 10px;
+      }
+      .sensor-data {
+        font-size: 1.2em;
+        margin: 5px 0;
+      }
+      .checkbox-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.9em;
+      }
+      .grid {
+        position: relative;
+        margin-top: 50px;
+        width: 100%;
+      }
+    </style>
+    <script>
+      let isDragging = false;
+      let offsetX, offsetY, sensorId;
+      const gridSize = 275; // Tile width + margin
+
+      function toggleSensor(sensorId, sensorNum) {
+        const checkbox = document.getElementById(`checkbox-${sensorId}-${sensorNum}`);
+        const sensorData = document.getElementById(`sensor-${sensorId}-${sensorNum}`);
+        
+        if (checkbox.checked) {
+          sensorData.style.display = "block";
+        } else {
+          sensorData.style.display = "none";
+        }
+      }
+
+      function moveTile(e) {
+        if (isDragging) {
+          const tile = document.getElementById("tile-" + sensorId);
+          tile.style.left = (e.clientX - offsetX) + 'px';
+          tile.style.top = (e.clientY - offsetY) + 'px';
+        }
+      }
+
+      function startDrag(e, id) {
+        const tile = document.getElementById("tile-" + id);
+        isDragging = true;
+        sensorId = id;
+
+        offsetX = e.clientX - tile.getBoundingClientRect().left;
+        offsetY = e.clientY - tile.getBoundingClientRect().top;
+
+        document.addEventListener('mousemove', moveTile);
+        document.addEventListener('mouseup', stopDrag);
+      }
+
+      function stopDrag() {
+        isDragging = false;
+        const tile = document.getElementById("tile-" + sensorId);
+        const left = tile.offsetLeft;
+        const top = tile.offsetTop;
+
+        const snapX = Math.round(left / gridSize) * gridSize;
+        const snapY = Math.round(top / gridSize) * gridSize;
+
+        tile.style.left = snapX + 'px';
+        tile.style.top = snapY + 'px';
+
+        document.removeEventListener('mousemove', moveTile);
+        document.removeEventListener('mouseup', stopDrag);
+      }
+    </script>
+  </head>
+  <body>
+    <h1>ESP32 Tile Dashboard with Sensor Controls</h1>
+
+    <div class="grid">
+      <div id="tile-1" class="tile" style="left: 0px; top: 0px;" onmousedown="startDrag(event, 1)">
+        <h3>Sensor 1</h3>
+        <div class="checkbox-container">
+          <input type="checkbox" id="checkbox-1-1" checked onchange="toggleSensor(1, 1)"> Sensor 1.1
+        </div>
+        <div id="sensor-1-1" class="sensor-data">Value: 25.5°C</div>
+
+        <div class="checkbox-container">
+          <input type="checkbox" id="checkbox-1-2" checked onchange="toggleSensor(1, 2)"> Sensor 1.2
+        </div>
+        <div id="sensor-1-2" class="sensor-data">Value: 30.2%</div>
+
+        <div class="checkbox-container">
+          <input type="checkbox" id="checkbox-1-3" checked onchange="toggleSensor(1, 3)"> Sensor 1.3
+        </div>
+        <div id="sensor-1-3" class="sensor-data">Value: 18.9V</div>
+      </div>
+
+      <div id="tile-2" class="tile" style="left: 0px; top: 250px;" onmousedown="startDrag(event, 2)">
+        <h3>Sensor 2</h3>
+        <div class="checkbox-container">
+          <input type="checkbox" id="checkbox-2-1" checked onchange="toggleSensor(2, 1)"> Sensor 2.1
+        </div>
+        <div id="sensor-2-1" class="sensor-data">Value: 22.3°C</div>
+
+        <div class="checkbox-container">
+          <input type="checkbox" id="checkbox-2-2" checked onchange="toggleSensor(2, 2)"> Sensor 2.2
+        </div>
+        <div id="sensor-2-2" class="sensor-data">Value: 40.5%</div>
+
+        <div class="checkbox-container">
+          <input type="checkbox" id="checkbox-2-3" checked onchange="toggleSensor(2, 3)"> Sensor 2.3
+        </div>
+        <div id="sensor-2-3" class="sensor-data">Value: 20.1V</div>
+      </div>
+
+      <div id="tile-3" class="tile" style="left: 0px; top: 500px;" onmousedown="startDrag(event, 3)">
+        <h3>Sensor 3</h3>
+        <div class="checkbox-container">
+          <input type="checkbox" id="checkbox-3-1" checked onchange="toggleSensor(3, 1)"> Sensor 3.1
+        </div>
+        <div id="sensor-3-1" class="sensor-data">Value: 19.8°C</div>
+
+        <div class="checkbox-container">
+          <input type="checkbox" id="checkbox-3-2" checked onchange="toggleSensor(3, 2)"> Sensor 3.2
+        </div>
+        <div id="sensor-3-2" class="sensor-data">Value: 35.7%</div>
+
+        <div class="checkbox-container">
+          <input type="checkbox" id="checkbox-3-3" checked onchange="toggleSensor(3, 3)"> Sensor 3.3
+        </div>
+        <div id="sensor-3-3" class="sensor-data">Value: 21.5V</div>
+      </div>
+    </div>
+
+  </body>
+</html>
+
+
+)rawliteral";
+
+void setup()
+{
+    // Start Serial Monitor
+    Serial.begin(115200);
+
+    // Connect to Wi-Fi
+    WiFi.begin(ssid, password);
+    while (WiFi.status() != WL_CONNECTED)
+    {
+        delay(1000);
+        Serial.println("Connecting to WiFi...");
+    }
+    Serial.println("Connected to Wi-Fi!");
+
+    // Serve the HTML page
+    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
+              { request->send(200, "text/html", htmlPage); });
+
+    // Handle real-time sensor data
+    server.on("/getSensor1", HTTP_GET, [](AsyncWebServerRequest *request)
+              {
+    String json = "{\"sensor1\": " + String(sensor1) + "}";
+    request->send(200, "application/json", json); });
+
+    server.on("/getSensor2", HTTP_GET, [](AsyncWebServerRequest *request)
+              {
+    String json = "{\"sensor2\": " + String(sensor2) + "}";
+    request->send(200, "application/json", json); });
+
+    server.on("/getSensor3", HTTP_GET, [](AsyncWebServerRequest *request)
+              {
+    String json = "{\"sensor3\": " + String(sensor3) + "}";
+    request->send(200, "application/json", json); });
+
+    // Start the server
+    server.begin();
+}
+
+void loop()
+{
+    // Update sensors if needed or read sensor data here
+    // For example, you can simulate sensor values changing over time
+    sensor1 += 0.1;
+    sensor2 += 0.2;
+    sensor3 -= 0.1;
+    delay(1000);
+}

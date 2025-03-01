@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{APPNAME}}</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <meta http-equiv='refresh' content='10'>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@mikhus/canvas-gauges@2.1.7/dist/all.min.js"></script>
+</head>
+<body>
+    <center><h2>{{APPNAME}}</h2></center>
+    <table>
+
+        <tr class='title'>     <th>Sensor      </th>  <th>Parameter</th>    <th>Value</th>                   <th>Unit</th>                  </tr>
+        <tr class='ads1015'>   <td>ADS1015     </th>  <td>AO0</td>          <td>{{ads1015_data_ai0}}         </td><td>V</td>                </tr>
+        <tr class='ads1015'>   <td>            </th>  <td>AO1</td>          <td>{{ads1015_data_ai1}}         </td><td>V</td>                </tr>
+        <tr class='ads1015'>   <td>            </th>  <td>AO2</td>          <td>{{ads1015_data_ai2}}         </td><td>V</td>                </tr>
+        <tr class='ads1015'>   <td>            </th>  <td>AO3</td>          <td>{{ads1015_data_ai3}}         </td><td>V</td>                </tr>
+        <tr class='bme680'>    <td>BME680      </th>  <td>Temp</td>         <td>{{bme680_data_temperature}}  </td><td>&#176;C</td>          </tr>
+        <tr class='bme680'>    <td>            </th>  <td>Humi</td>         <td>{{bme680_data_humidity}}     </td><td>%</td>                </tr>
+        <tr class='bme680'>    <td>            </th>  <td>Pres</td>         <td>{{bme680_data_pressure}}     </td><td>mbar</td>             </tr>
+        <tr class='bme680'>    <td>            </th>  <td>AQ</td>           <td>{{bme680_data_airquality}}   </td><td>AQI</td>              </tr>
+        <tr class='d6410'>     <td>David 6410  </th>  <td>Wind</td>         <td>{{d6410_data_windDIR}}       </td><td>deg</td>              </tr>
+        <tr class='d6410'>     <td>            </th>  <td>Wind</td>         <td>{{d6410_data_windSPD}}       </td><td>m/s</td>              </tr>
+        <tr class='hm330x'>    <td>HM330x      </th>  <td>PM1.0</td>        <td>{{hm330x_data_PM1}}          </td><td>&#181;g/m&#179;</td>  </tr>
+        <tr class='hm330x'>    <td>            </th>  <td>PM2.5</td>        <td>{{hm330x_data_PM25}}         </td><td>&#181;g/m&#179;</td>  </tr>
+        <tr class='hm330x'>    <td>            </th>  <td>PM10</td>         <td>{{hm330x_data_PM10}}         </td><td>&#181;g/m&#179;</td>  </tr>
+        <tr class='mdws'>      <td>WindSensor  </th>  <td>Wind</td>         <td>{{mdws_data_windms}}         </td><td>m/s</td>              </tr>
+        <tr class='mdws'>      <td>            </th>  <td>Temp</td>         <td>{{mdws_data_temperature}}    </td><td>&#176;C</td>          </tr>
+        <tr class='mlx'>       <td>MLX90614    </th>  <td>AmbiTemp</td>     <td>{{mlx90614_data_AmbiTemp}}   </td><td>&#176;C</td>          </tr>
+        <tr class='mlx'>       <td>            </th>  <td>ObjTemp</td>      <td>{{mlx90614_data_ObjTemp}}    </td><td>&#176;C</td>          </tr>
+        <tr class='scd4'>      <td>SCD41       </th>  <td>CO2</td>          <td>{{scd41_data_co2}}           </td><td>ppm</td>              </tr>
+        <tr class='scd4'>      <td>            </th>  <td>Temp</td>         <td>{{scd41_data_temperature}}   </td><td>&#176;C</td>          </tr>
+        <tr class='scd4'>      <td>            </th>  <td>Humi</td>         <td>{{scd41_data_humidity}}      </td><td>%</td>                </tr>
+        <tr class='tsl'>       <td>TSL2591     </th>  <td>LVIS</td>         <td>{{tsl2591_data_vis}}         </td><td>lum</td>              </tr>
+        <tr class='tsl'>       <td>            </th>  <td>LNIR</td>         <td>{{tsl2591_data_nir}}         </td><td>lum</td>              </tr>
+        <tr class='tsl'>       <td>            </th>  <td>LFULL</td>        <td>{{tsl2591_data_lux}}         </td><td>lux</td>              </tr>
+        <tr class='wifi'>      <td>WIFI        </th>  <td>WIFI</td>         <td>{{wifi_data_WifiSignal}}     </td><td>dBm</td>              </tr>
+        <tr class='app'>       <td>APP         </th>  <td>APP Info</td>     <td>{{APPRELEASE}}               </td><td>{{APPDATE}}           </tr>
+
+    </table>
+
+    <div class="gauge-container">
+        <canvas id="tempGauge" class="gauge"></canvas>
+        <canvas id="humGauge" class="gauge"></canvas>
+    </div>
+    <script src="script.js"></script>
+
+</body>
+</html>

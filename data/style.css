@@ -1,0 +1,38 @@
+body { font-family: Arial, sans-serif; margin: 20px; }
+h1 { text-align: center; margin-bottom: 20px; }
+table { width: 100%; max-width: 600px; border-collapse: collapse; margin: 20px auto; }
+th, td { padding: 8px; text-align: center; border: 1px solid #ddd; }
+th { font-size: 1.2em; text-transform: uppercase; background-color: #f4f4f4; }
+td { font-size: 1em; }
+
+
+.title { color: #5d5d5d; font-weight: bold; }
+.ads1015 { color: #8c564b; font-weight: normal; }
+.bme680 { color: #9467bd; font-weight: normal; }
+.d6410 { color: #1b8ee7; font-weight: normal; }
+.hm330x { color: #d62728; font-weight: normal; }
+.mdws { color:rgb(110, 140, 205); font-weight: normal; }
+.mlx { color: #ff7f0e; font-weight: normal; }
+.scd4 { color: #2ca02c; font-weight: normal; }
+.tsl { color: #1f77b4; font-weight: normal; }
+.wifi { color:rgb(226, 208, 12); font-weight: normal; }
+.app { color:rgb(30, 217, 179); font-weight: normal; }
+
+img { width: 20px; height: 20px; vertical-align: middle; }
+
+@media (max-width: 600px) {
+    table { width: 100%; font-size: 0.9em; }
+    th, td { padding: 4px; }
+    h1 { font-size: 1.25em; }
+}
+
+.gauge-container {
+  display: flex;
+  justify-content: center;
+  gap: 50px;
+}
+
+.gauge {
+  width: 200px;
+  height: 200px;
+}

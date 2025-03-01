@@ -1,0 +1,19 @@
+{
+    "files.associations": {
+        "array": "cpp",
+        "deque": "cpp",
+        "string": "cpp",
+        "unordered_map": "cpp",
+        "unordered_set": "cpp",
+        "vector": "cpp",
+        "string_view": "cpp",
+        "initializer_list": "cpp",
+        "regex": "cpp",
+        "*.tcc": "cpp",
+        "cmath": "cpp"
+    },
+    "C_Cpp.autocompleteAddParentheses": true,
+    "C_Cpp.inlayHints.parameterNames.enabled": true,
+    "C_Cpp.dimInactiveRegions": false,
+    "C_Cpp.errorSquiggles": "disabled"
+}
