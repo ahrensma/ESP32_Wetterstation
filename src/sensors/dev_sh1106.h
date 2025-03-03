@@ -20,8 +20,7 @@
  * @param int wifistrength
  * @param float temp
  */
-struct SH1106_DATA
-{
+struct SH1106_DATA {
   bool status;
   String ipadress;
   int wifistrength;
@@ -39,6 +38,6 @@ void initSH1106();
  * @param sh1106_data
  *
  */
-void setSH1106Values(SH1106_DATA *sh1106_data);
+void setSH1106Values(SH1106_DATA* sh1106_data);
 
 #endif /* _DEV_SH1106_H */

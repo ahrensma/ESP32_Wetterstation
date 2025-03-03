@@ -4,12 +4,13 @@
  * @date 2025_Q1
  *
  * @brief See detailed documentation under
- * @link https://moderndevice.com/blogs/documentation/calibrating-the-rev-p-wind-sensor-from-a-new-regression
+ * @link
+ * https://moderndevice.com/blogs/documentation/calibrating-the-rev-p-wind-sensor-from-a-new-regression
  *
  * Calculation:
  * Temp_C = ((float)Volts - ZeroVoltage) / .0195;
  * WS_MPH = (((Volts – ZeroWind_V) / (3.038517 * (Temp_C ^ 0.115157 ))) / 0.087288 ) ^ 3.009364
- * 
+ *
  */
 
 #ifndef _DEV_MDWS_H
@@ -25,8 +26,7 @@
  * @param float windBF
  * @param float temperature
  */
-struct MDWS_DATA
-{
+struct MDWS_DATA {
   bool status;
   float rawdata_wind;
   float rawdata_temp;
@@ -38,9 +38,9 @@ struct MDWS_DATA
 
 /**
  * @brief Init MDWS
- * 
+ *
  * Nothing to do, because the analog values are comming from the ADS105.
- * 
+ *
  */
 void initMDWS();
 
@@ -49,6 +49,6 @@ void initMDWS();
  *
  * @param hm330x_data
  */
-void getMDWSValues(MDWS_DATA *mdws_data);
+void getMDWSValues(MDWS_DATA* mdws_data);
 
 #endif /* _DEV_MDWS_H */

@@ -12,8 +12,7 @@ Adafruit_MLX90614 mlx = Adafruit_MLX90614();
 void initMLX90614()
 {
 
-  if (mlx.begin() == false)
-  {
+  if (mlx.begin() == false) {
     Serial.println("Error connecting to MLX sensor. Check wiring.");
     while (1)
       ;
@@ -21,7 +20,7 @@ void initMLX90614()
 }
 
 //-----------------------------------------------------------------------------
-void getMLX90614Values(MLX90614_DATA *mlx90614_data)
+void getMLX90614Values(MLX90614_DATA* mlx90614_data)
 {
 
   mlx90614_data->AmbiTemp = mlx.readAmbientTempC();

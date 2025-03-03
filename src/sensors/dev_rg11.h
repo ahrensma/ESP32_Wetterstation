@@ -13,8 +13,7 @@
  * @struct RG11_DATA
  * @param bool status
  */
-struct RG11_DATA
-{
+struct RG11_DATA {
   bool status;
 };
 
@@ -29,6 +28,6 @@ void initRG11();
  * @param rg11_data
  *
  */
-void getRG11Values(RG11_DATA *rg11_data);
+void getRG11Values(RG11_DATA* rg11_data);
 
 #endif /* _DEV_RG11_h */

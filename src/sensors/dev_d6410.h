@@ -11,9 +11,9 @@
 #ifndef _DEV_D6410_H
 #define _DEV_D6410_H
 
+#include <Arduino.h> // neccessary for map()
 #include <WString.h>
 #include <math.h>
-#include <Arduino.h> // neccessary for map()
 
 #include "calibration.h"
 
@@ -28,8 +28,7 @@
  * @param float windDIR
  * @param String windDirection
  */
-struct D6410_DATA
-{
+struct D6410_DATA {
   bool status;
   float ISRFreq;
   float windSpeed_ms;
@@ -62,12 +61,13 @@ String calculateWindDirection(float irsfreq);
 
  * Wind Speed Translation Formula
  *      1600 rev/hr = 1 mph
- *      V = P(2.25/T) (V = speed in mph, P = no. of pulses per sample period T = sample period in seconds)
+ *      V = P(2.25/T) (V = speed in mph, P = no. of pulses per sample period T = sample period in
+ seconds)
  * Wind Direction Translation
  *      Variable resistance 0 - 20KΩ; 10KΩ = south, 180°
  *
  * @param d6410_data
  */
-void getD6410Values(D6410_DATA *d6410_data);
+void getD6410Values(D6410_DATA* d6410_data);
 
 #endif /* _DEV_D6410_H */

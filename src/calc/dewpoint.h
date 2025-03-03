@@ -13,20 +13,30 @@
  * @param float temp
  * @param float humi
  * @param float dewpoint
+ * @param float absHumi;
  */
-struct DEWPOINT_DATA
-{
+struct DEWPOINT_DATA {
   bool status;
   float temp;
   float humi;
   float dewpoint;
+  float absHumi;
 };
+
+const double R_STAR = 8314.3; // J/(kmol*K)
+const double MW = 18.016; // kg/kmol
+
+double SDD(double T);
+double DD(double r, double T);
+double relHumi(double T, double TD);
+double TD(double r, double T);
+double AF(double r, double TK);
 
 /**
  *
- * https://craftofcoding.wordpress.com/wp-content/uploads/2018/06/prac_dewpoint.pdf
+ * https://www.wetterochs.de/wetter/feuchte.html
  *
  */
-void calcDEWPOINT(DEWPOINT_DATA *dewpoint_data);
+void calcDEWPOINT(DEWPOINT_DATA* dewpoint_data);
 
 #endif /* _DEWPOINT_H */

@@ -16,8 +16,7 @@
  * @param int nir
  * @param int lux
  */
-struct TSL2591_DATA
-{
+struct TSL2591_DATA {
   bool status;
   int vis;
   int nir;
@@ -35,6 +34,6 @@ void initTSL2591();
  * @param tsl2591_data
  *
  */
-void getTSL2591Values(TSL2591_DATA *tsl2591_data);
+void getTSL2591Values(TSL2591_DATA* tsl2591_data);
 
 #endif /* _DEV_TSL2591_H */

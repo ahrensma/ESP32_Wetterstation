@@ -16,8 +16,7 @@
  * @param float temperature
  * @param float humidity
  */
-struct SCD41_DATA
-{
+struct SCD41_DATA {
   bool status;
   float co2;
   float temperature;
@@ -35,6 +34,6 @@ void initSCD41();
  * @param scd41_data
  *
  */
-void getSCD41Values(SCD41_DATA *scd41_data);
+void getSCD41Values(SCD41_DATA* scd41_data);
 
 #endif /* _DEV_SCD41_H */

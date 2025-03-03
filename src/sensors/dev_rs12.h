@@ -11,8 +11,7 @@
  * @struct RS12_DATA
  * @param bool status
  */
-struct RS12_DATA
-{
+struct RS12_DATA {
   bool status;
 };
 
@@ -27,6 +26,6 @@ void initRS12();
  * @param rs12_data
  *
  */
-void getRS12Values(RS12_DATA *rs12_data);
+void getRS12Values(RS12_DATA* rs12_data);
 
 #endif /* _DEV_RS12_h */

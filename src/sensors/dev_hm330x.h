@@ -16,8 +16,7 @@
  * @param int PM25
  * @param int PM10
  */
-struct HM330X_DATA
-{
+struct HM330X_DATA {
   bool status;
   int PM1;
   int PM25;
@@ -34,6 +33,6 @@ void initHM330X();
  * @brief Get HM330X values
  * @param hm330x_data
  */
-void getHM330XValues(HM330X_DATA *hm330x_data);
+void getHM330XValues(HM330X_DATA* hm330x_data);
 
 #endif /* _DEV_HM330X_H */

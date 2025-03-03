@@ -12,8 +12,7 @@ Adafruit_TSL2591 tsl = Adafruit_TSL2591(2591);
 void initTSL2591()
 {
 
-  if (tsl.begin() == false)
-  {
+  if (tsl.begin() == false) {
     Serial.println(F("TSL2591 not detected ..."));
     while (1)
       ;
@@ -25,7 +24,7 @@ void initTSL2591()
 }
 
 //-----------------------------------------------------------------------------
-void getTSL2591Values(TSL2591_DATA *tsl2591_data)
+void getTSL2591Values(TSL2591_DATA* tsl2591_data)
 {
 
   uint32_t lum = tsl.getFullLuminosity();

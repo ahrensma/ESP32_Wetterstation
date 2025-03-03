@@ -17,8 +17,7 @@
  * @param float ai2
  * @param float ai3
  */
-struct ADS1015_DATA
-{
+struct ADS1015_DATA {
   bool status;
   float ai0;
   float ai1;
@@ -49,6 +48,6 @@ void initADS1015();
  * ads.setGain(GAIN_EIGHT);      // 8x gain   +/- 0.512V  1 bit = 0.25mV   0.015625mV
  * ads.setGain(GAIN_SIXTEEN);    // 16x gain  +/- 0.256V  1 bit = 0.125mV  0.0078125mV
  */
-void getADS105Values(ADS1015_DATA *ads1015_data);
+void getADS105Values(ADS1015_DATA* ads1015_data);
 
 #endif /* _DEV_ADS1015_H */

@@ -15,8 +15,7 @@
  * @param float AmbiTemp
  * @param float ObjTemp
  */
-struct MLX90614_DATA
-{
+struct MLX90614_DATA {
   bool status;
   float AmbiTemp;
   float ObjTemp;
@@ -33,6 +32,6 @@ void initMLX90614();
  * @param mlx90614_data
  *
  */
-void getMLX90614Values(MLX90614_DATA *mlx90614_data);
+void getMLX90614Values(MLX90614_DATA* mlx90614_data);
 
 #endif /* _DEV_MLX90614_H */
