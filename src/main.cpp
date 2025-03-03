@@ -48,7 +48,7 @@ WIFI_DATA wifi_data;
 
 DEWPOINT_DATA dewpoint_data;
 AQI_DATA aqi_data;
-SQM_DATA sqm_data;
+SQI_DATA sqi_data;
 
 //------------------------------------------------------------------------------
 /**
@@ -69,8 +69,7 @@ void onOTAStart()
 void onOTAProgress(size_t current, size_t final)
 {
   // Log every 1 second
-  if (millis() - ota_progress_millis > 1000)
-  {
+  if (millis() - ota_progress_millis > 1000) {
     ota_progress_millis = millis();
     Serial.printf("OTA Progress Current: %u bytes, Final: %u bytes\n", current, final);
   }
@@ -84,27 +83,22 @@ void onOTAProgress(size_t current, size_t final)
 void onOTAEnd(bool success)
 {
   // Log when OTA has finished
-  if (success)
-  {
+  if (success) {
     Serial.println("OTA update finished successfully!");
-  }
-  else
-  {
+  } else {
     Serial.println("There was an error during OTA update!");
   }
-}//------------------------------------------------------------------------------
+} //------------------------------------------------------------------------------
 /**
  * @brief Sensor task 1 -- ADA1015
  *
  */
-void sensorTask1(void *parameter)
+void sensorTask1(void* parameter)
 {
-  while (true)
-  {
+  while (true) {
     getADS105Values(&ads1015_data);
 
-    if (SERIAL_OUTPUT == true)
-    {
+    if (SERIAL_OUTPUT == true) {
       Serial.printf("AO0      = %.1f V \n", ads1015_data.ai0);
       Serial.printf("AO1      = %.1f V \n", ads1015_data.ai1);
       Serial.printf("AO2      = %.1f V \n", ads1015_data.ai2);
@@ -120,11 +114,9 @@ void sensorTask1(void *parameter)
  * @brief Sensor task 2 -- BME680
  *
  */
-void sensorTask2(void *parameter)
+void sensorTask2(void* parameter)
 {
-  while (true)
-  {
-
+  while (true) {
     getBME680Values(&bme680_data);
 
     dewpoint_data.temp = bme680_data.temperature;
@@ -132,30 +124,28 @@ void sensorTask2(void *parameter)
 
     calcDEWPOINT(&dewpoint_data);
 
-    if (bme680_data.status == false)
-    {
+    if (bme680_data.status == false) {
       Serial.println("Failed to perform reading BME680.");
     }
 
-    if (SERIAL_OUTPUT == true)
-    {
+    if (SERIAL_OUTPUT == true) {
       Serial.printf("Temp     = %.1f ºC   \n", bme680_data.temperature);
       Serial.printf("Humi     = %.1f %%   \n", bme680_data.humidity);
       Serial.printf("Pres     = %.1f mbar \n", bme680_data.pressure);
       Serial.printf("AQ       = %.1f AQI  \n", bme680_data.airquality);
+      Serial.printf("Dewpoint = %.1f ºC   \n", dewpoint_data.dewpoint);
     }
-
     vTaskDelay(pdMS_TO_TICKS(task_delay));
   }
 }
 
-
 //------------------------------------------------------------------------------
 /**
- * @brief Interrupt Service Routine (ISR)
+ * @brief ISR D6410
  *
  */
-void IRAM_ATTR handleInterrupt() {
+void IRAM_ATTR handle_ISR_D6410()
+{
   pulseCount++; // Increment pulse count on each interrupt
 }
 
@@ -164,7 +154,8 @@ void IRAM_ATTR handleInterrupt() {
  * @brief calculateWindSpeed
  *
  */
-float calculateWindSpeed(float rpm) {
+float calculateWindSpeed(float rpm)
+{
   float windSpeedMS = rpm * anemometerFactor; // Convert RPM to wind speed in m/s
   return windSpeedMS;
 }
@@ -174,17 +165,15 @@ float calculateWindSpeed(float rpm) {
  * @brief Sensor task 3 -- D6410
  *
  */
-void sensorTask3(void *parameter)
+void sensorTask3(void* parameter)
 {
-  while (true)
-  {
-    
+  while (true) {
     unsigned long currentTime = millis();
     if (currentTime - lastTime >= 1000) { // Calculate RPM every second
       float rpm = (pulseCount / (float)pulsesPerRevolution) * 60.0;
       d6410_data.windSpeed_ms = calculateWindSpeed(rpm);
       d6410_data.windSpeed_kmh = d6410_data.windSpeed_ms * 3.6;
-      
+
       pulseCount = 0; // Reset pulse count
       lastTime = currentTime;
     }
@@ -193,8 +182,7 @@ void sensorTask3(void *parameter)
 
     getD6410Values(&d6410_data);
 
-    if (SERIAL_OUTPUT == true)
-    {
+    if (SERIAL_OUTPUT == true) {
       Serial.printf("WindDIR  = %02d deg \n", d6410_data.windDIR);
       Serial.printf("WindSPD  = %02d ms  \n", d6410_data.windSpeed_ms);
       Serial.printf("WindDIR  = %02d kmh \n", d6410_data.windSpeed_kmh);
@@ -204,21 +192,19 @@ void sensorTask3(void *parameter)
   }
 }
 
-
 //------------------------------------------------------------------------------
 /**
  * @brief Sensor task 4 -- HM330x
  *
  */
-void sensorTask4(void *parameter)
+void sensorTask4(void* parameter)
 {
-  while (true)
-  {
-
+  while (true) {
     getHM330XValues(&hm330x_data);
+    aqi_data.pm25 = hm330x_data.PM25;
+    calcAQI_PM25(&aqi_data);
 
-    if (SERIAL_OUTPUT == true)
-    {
+    if (SERIAL_OUTPUT == true) {
       Serial.printf("PM1.0    = %02d µg/m^3 \n", hm330x_data.PM1);
       Serial.printf("PM2.5    = %02d µg/m^3 \n", hm330x_data.PM25);
       Serial.printf("PM10     = %02d µg/m^3 \n", hm330x_data.PM10);
@@ -233,18 +219,15 @@ void sensorTask4(void *parameter)
  * @brief Sensor task 5 -- MDWS
  *
  */
-void sensorTask5(void *parameter)
+void sensorTask5(void* parameter)
 {
-  while (true)
-  {
-
+  while (true) {
     mdws_data.rawdata_temp = ads1015_data.ai0;
     mdws_data.rawdata_wind = ads1015_data.ai2;
 
     getMDWSValues(&mdws_data);
 
-    if (SERIAL_OUTPUT == true)
-    {
+    if (SERIAL_OUTPUT == true) {
       Serial.printf("MD Wind  = %.1f m/s \n", mdws_data.windms);
       Serial.printf("MD Temp  = %.1f ºC  \n", mdws_data.temperature);
     }
@@ -258,15 +241,12 @@ void sensorTask5(void *parameter)
  * @brief Sensor task 6 -- MLX90614
  *
  */
-void sensorTask6(void *parameter)
+void sensorTask6(void* parameter)
 {
-  while (true)
-  {
-
+  while (true) {
     getMLX90614Values(&mlx90614_data);
 
-    if (SERIAL_OUTPUT == true)
-    {
+    if (SERIAL_OUTPUT == true) {
       Serial.printf("AmbiTemp = %.1f ºC \n", mlx90614_data.AmbiTemp);
       Serial.printf("ObjTemp  = %.1f ºC \n", mlx90614_data.ObjTemp);
     }
@@ -277,15 +257,33 @@ void sensorTask6(void *parameter)
 
 //------------------------------------------------------------------------------
 /**
+ * @brief ISR RG11
+ *
+ */
+void IRAM_ATTR handle_ISR_RG11()
+{
+  dropCount++;
+  rainStatus = RAIN_DETECTED;
+}
+
+//------------------------------------------------------------------------------
+/**
  * @brief Sensor task 7 -- RG11
  *
  */
-void sensorTask7(void *parameter)
+void sensorTask7(void* parameter)
 {
-  while (true)
-  {
-
+  while (true) {
     getRG11Values(&rg11_data);
+
+    // unsigned long currentTime = millis();
+    // if (currentTime - lastCheckTime >= interval)
+    // {
+    //   Serial.print("Raindrops per second: ");
+    //   Serial.println(dropCount);
+    //   dropCount = 0;
+    //   lastCheckTime = currentTime;
+    // }
 
     vTaskDelay(pdMS_TO_TICKS(task_delay));
   }
@@ -296,11 +294,9 @@ void sensorTask7(void *parameter)
  * @brief Sensor task 8 -- RS12
  *
  */
-void sensorTask8(void *parameter)
+void sensorTask8(void* parameter)
 {
-  while (true)
-  {
-
+  while (true) {
     getRS12Values(&rs12_data);
 
     vTaskDelay(pdMS_TO_TICKS(task_delay));
@@ -312,15 +308,12 @@ void sensorTask8(void *parameter)
  * @brief Sensor task 9 -- SCD41
  *
  */
-void sensorTask9(void *parameter)
+void sensorTask9(void* parameter)
 {
-  while (true)
-  {
-
+  while (true) {
     getSCD41Values(&scd41_data);
 
-    if (SERIAL_OUTPUT == true)
-    {
+    if (SERIAL_OUTPUT == true) {
       Serial.printf("CO2      = %.f ppm \n", scd41_data.co2);
       Serial.printf("Temp     = %.1f ºC \n", scd41_data.temperature);
       Serial.printf("Humi     = %.1f %% \n", scd41_data.humidity);
@@ -335,11 +328,9 @@ void sensorTask9(void *parameter)
  * @brief Sensor task 10 -- SH1106
  *
  */
-void sensorTask10(void *parameter)
+void sensorTask10(void* parameter)
 {
-  while (true)
-  {
-
+  while (true) {
     sh1106_data.temp = scd41_data.temperature;
     sh1106_data.wifistrength = wifi_data.WifiSignal;
     sh1106_data.ipadress = wifi_data.IPAddress;
@@ -355,15 +346,12 @@ void sensorTask10(void *parameter)
  * @brief Sensor task 11 -- TSL2591
  *
  */
-void sensorTask11(void *parameter)
+void sensorTask11(void* parameter)
 {
-  while (true)
-  {
-
+  while (true) {
     getTSL2591Values(&tsl2591_data);
 
-    if (SERIAL_OUTPUT == true)
-    {
+    if (SERIAL_OUTPUT == true) {
       Serial.printf("LVIS     = %02d lum \n", tsl2591_data.vis);
       Serial.printf("LNIR     = %02d lum \n", tsl2591_data.nir);
       Serial.printf("LFULL    = %02d lux \n", tsl2591_data.lux);
@@ -378,15 +366,12 @@ void sensorTask11(void *parameter)
  * @brief Sensor task 12 -- WIFI
  *
  */
-void sensorTask12(void *parameter)
+void sensorTask12(void* parameter)
 {
-  while (true)
-  {
-
+  while (true) {
     CalcWiFiStrength(&wifi_data);
 
-    if (SERIAL_OUTPUT == true)
-    {
+    if (SERIAL_OUTPUT == true) {
       Serial.printf("WIFI     = %02d dBm \n", wifi_data.WifiSignal);
     }
 
@@ -396,21 +381,28 @@ void sensorTask12(void *parameter)
 
 //------------------------------------------------------------------------------
 /**
- *
+ * @brief Setup all
  *
  */
 void setup()
 {
-
   Serial.begin(115200);
   delay(2000);
   Serial.printf("Starting FreeRTOS/ESP32S3 \n");
   Serial.printf("ESP Wetterstation \n");
   Serial.printf("Apprelease: ", __APPRELEASE__, "\n");
   Serial.printf("Appdate: ", __APPDATE__, "\n");
+  Serial.printf("\n");
+  Serial.printf("--------------------------\n");
+  Serial.printf("\n");
 
-  pinMode(ANEOMETER_ISR_PIN, INPUT_PULLUP); // Use internal pull-up resistor
-  attachInterrupt(ANEOMETER_ISR_PIN, handleInterrupt, RISING); // Interrupt on encoder signal
+  /* D1 */
+  pinMode(ANEOMETER_ISR_PIN, INPUT_PULLUP);
+  attachInterrupt(ANEOMETER_ISR_PIN, handle_ISR_D6410, RISING);
+
+  /* D2 */
+  pinMode(RG11_ISR_PIN, INPUT_PULLUP);
+  attachInterrupt(RG11_ISR_PIN, handle_ISR_RG11, FALLING);
 
   initWiFi(ssid, password);
 
@@ -431,69 +423,71 @@ void setup()
   Serial.printf("Sensors connected\n");
 
   // Initialize LittleFS
-  if (!LittleFS.begin(true))
-  {
+  if (!LittleFS.begin(true)) {
     Serial.println("An error occurred while mounting LittleFS");
     return;
   }
 
   // Initialize LittleFS instead of LittleFS
-  if (!LittleFS.begin(true))
-  {
+  if (!LittleFS.begin(true)) {
     Serial.println("LittleFS Mount Failed!");
     return;
   }
   Serial.println("LittleFS Mounted!");
 
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
-            {    
-              File file = LittleFS.open("/index.html", "r");
-              if (!file) {
-                  request->send(500, "text/plain", "Failed to load HTML file");
-                  return;
-              }
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest* request) {
+    File file = LittleFS.open("/index.html", "r");
+    if (!file) {
+      request->send(500, "text/plain", "Failed to load HTML file");
+      return;
+    }
 
-              String html = file.readString();
-              file.close();
+    String html = file.readString();
+    file.close();
 
-              /* App and website informations */
-              html.replace("{{APPNAME}}", String(__APPNAME__).c_str());
-              html.replace("{{APPRELEASE}}", String(__APPRELEASE__).c_str());
-              html.replace("{{APPDATE}}", String(__APPDATE__).c_str());
+    /* App and website informations */
+    html.replace("{{APPNAME}}", String(__APPNAME__).c_str());
+    html.replace("{{APPRELEASE}}", String(__APPRELEASE__).c_str());
+    html.replace("{{APPDATE}}", String(__APPDATE__).c_str());
 
-              /* Sensor data */
-              html.replace("{{ads1015_data_ai0}}", String(ads1015_data.ai0, 1).c_str());
-              html.replace("{{ads1015_data_ai1}}", String(ads1015_data.ai1, 1).c_str());
-              html.replace("{{ads1015_data_ai2}}", String(ads1015_data.ai2, 1).c_str());
-              html.replace("{{ads1015_data_ai3}}", String(ads1015_data.ai3, 1).c_str());
-              html.replace("{{bme680_data_temperature}}", String(bme680_data.temperature, 1).c_str());
-              html.replace("{{bme680_data_humidity}}", String(bme680_data.humidity, 1).c_str());
-              html.replace("{{bme680_data_pressure}}", String(bme680_data.pressure, 1).c_str());
-              html.replace("{{bme680_data_airquality}}", String(bme680_data.airquality, 1).c_str());
-              html.replace("{{d6410_data_windDIR}}", String(d6410_data.windDIR, 1).c_str());
-              html.replace("{{d6410_data_windSPD}}", String(d6410_data.windSpeed_ms, 1).c_str());
-              html.replace("{{hm330x_data_PM1}}", String(hm330x_data.PM1).c_str());
-              html.replace("{{hm330x_data_PM25}}", String(hm330x_data.PM25).c_str());
-              html.replace("{{hm330x_data_PM10}}", String(hm330x_data.PM10).c_str());
-              html.replace("{{mdws_data_windms}}", String(mdws_data.windms, 1).c_str());
-              html.replace("{{mdws_data_temperature}}", String(mdws_data.temperature, 1).c_str());
-              html.replace("{{mlx90614_data_AmbiTemp}}", String(mlx90614_data.AmbiTemp, 1).c_str());
-              html.replace("{{mlx90614_data_ObjTemp}}", String(mlx90614_data.ObjTemp, 1).c_str());
-              html.replace("{{scd41_data_co2}}", String(scd41_data.co2, 0).c_str());
-              html.replace("{{scd41_data_temperature}}", String(scd41_data.temperature, 1).c_str());
-              html.replace("{{scd41_data_humidity}}", String(scd41_data.humidity, 1).c_str());
-              html.replace("{{tsl2591_data_vis}}", String(tsl2591_data.vis).c_str());
-              html.replace("{{tsl2591_data_nir}}", String(tsl2591_data.nir).c_str());
-              html.replace("{{tsl2591_data_lux}}", String(tsl2591_data.lux).c_str());
-              html.replace("{{wifi_data_WifiSignal}}", String(wifi_data.WifiSignal).c_str());
+    /* Sensor data */
+    html.replace("{{ads1015_data_ai0}}", String(ads1015_data.ai0, 1).c_str());
+    html.replace("{{ads1015_data_ai1}}", String(ads1015_data.ai1, 1).c_str());
+    html.replace("{{ads1015_data_ai2}}", String(ads1015_data.ai2, 1).c_str());
+    html.replace("{{ads1015_data_ai3}}", String(ads1015_data.ai3, 1).c_str());
+    html.replace("{{bme680_data_temperature}}", String(bme680_data.temperature, 1).c_str());
+    html.replace("{{bme680_data_humidity}}", String(bme680_data.humidity, 1).c_str());
+    html.replace("{{bme680_data_pressure}}", String(bme680_data.pressure, 1).c_str());
+    html.replace("{{bme680_data_airquality}}", String(bme680_data.airquality, 1).c_str());
+    html.replace("{{d6410_data_windDIR}}", String(d6410_data.windDIR, 1).c_str());
+    html.replace("{{d6410_data_windSPD}}", String(d6410_data.windSpeed_ms, 1).c_str());
+    html.replace("{{hm330x_data_PM1}}", String(hm330x_data.PM1).c_str());
+    html.replace("{{hm330x_data_PM25}}", String(hm330x_data.PM25).c_str());
+    html.replace("{{hm330x_data_PM10}}", String(hm330x_data.PM10).c_str());
+    html.replace("{{mdws_data_windms}}", String(mdws_data.windms, 1).c_str());
+    html.replace("{{mdws_data_temperature}}", String(mdws_data.temperature, 1).c_str());
+    html.replace("{{mlx90614_data_AmbiTemp}}", String(mlx90614_data.AmbiTemp, 1).c_str());
+    html.replace("{{mlx90614_data_ObjTemp}}", String(mlx90614_data.ObjTemp, 1).c_str());
+    html.replace("{{scd41_data_co2}}", String(scd41_data.co2, 0).c_str());
+    html.replace("{{scd41_data_temperature}}", String(scd41_data.temperature, 1).c_str());
+    html.replace("{{scd41_data_humidity}}", String(scd41_data.humidity, 1).c_str());
+    html.replace("{{tsl2591_data_vis}}", String(tsl2591_data.vis).c_str());
+    html.replace("{{tsl2591_data_nir}}", String(tsl2591_data.nir).c_str());
+    html.replace("{{tsl2591_data_lux}}", String(tsl2591_data.lux).c_str());
+    html.replace("{{dewpoint}}", String(dewpoint_data.dewpoint).c_str());
+    html.replace("{{skyquality_norm}}", String(sqi_data.sqi_norm).c_str());
+    html.replace("{{skyquality_freq}}", String(sqi_data.sqi_freq).c_str());
+    html.replace("{{airqualityindex}}", String(aqi_data.aqi_idx).c_str());
+    html.replace("{{wifi_data_WifiSignal}}", String(wifi_data.WifiSignal).c_str());
 
-              request->send(200, "text/html", html); });
+    request->send(200, "text/html", html);
+  });
 
-  server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request)
-            { request->send(LittleFS, "/style.css", "text/css"); });
+  server.on("/style.css", HTTP_GET,
+      [](AsyncWebServerRequest* request) { request->send(LittleFS, "/style.css", "text/css"); });
 
-  server.on("/favicon.png", HTTP_GET, [](AsyncWebServerRequest *request)
-            { request->send(LittleFS, "/favicon.png", "image/png"); });
+  server.on("/favicon.png", HTTP_GET,
+      [](AsyncWebServerRequest* request) { request->send(LittleFS, "/favicon.png", "image/png"); });
 
   server.begin();
 
@@ -509,41 +503,45 @@ void setup()
 
   //-----------------------------------------------------------------------------
   /* REST API endpoint to return sensor values in JSON format */
-  server.on("/api/sensors", HTTP_GET, [](AsyncWebServerRequest *request)
-            {
+  server.on("/api/sensors", HTTP_GET, [](AsyncWebServerRequest* request) {
     String jsonResponse = "{";
 
-    jsonResponse += "\"AO0\": "         + String(ads1015_data.ai0, 1)         + ",";
-    jsonResponse += "\"AO1\": "         + String(ads1015_data.ai1, 1)         + ",";
-    jsonResponse += "\"AO2\": "         + String(ads1015_data.ai2, 1)         + ",";
-    jsonResponse += "\"AO3\": "         + String(ads1015_data.ai3, 1)         + ",";
-    jsonResponse += "\"BME680_Temp\": " + String(bme680_data.temperature, 1)  + ",";
-    jsonResponse += "\"BME680_Humi\": " + String(bme680_data.humidity, 1)     + ",";
-    jsonResponse += "\"BME680_Pres\": " + String(bme680_data.pressure, 1)     + ",";
-    jsonResponse += "\"BME680_AQ\": "   + String(bme680_data.airquality, 1)   + ",";
-    jsonResponse += "\"D6410_DIR\": "   + String(d6410_data.windDIR)          + ",";
-    jsonResponse += "\"D6410_SPD\": "   + String(d6410_data.windSpeed_ms)        + ",";
-    jsonResponse += "\"PM1.0\": "       + String(hm330x_data.PM1)             + ",";
-    jsonResponse += "\"PM2.5\": "       + String(hm330x_data.PM25)            + ",";
-    jsonResponse += "\"PM10\": "        + String(hm330x_data.PM10)            + ",";
-    jsonResponse += "\"WindMS\": "      + String(mdws_data.windms)            + ",";
-    jsonResponse += "\"Temp\": "        + String(mdws_data.temperature)       + ",";
-    jsonResponse += "\"AmbiTemp\": "    + String(mlx90614_data.AmbiTemp, 1)   + ",";
-    jsonResponse += "\"ObjTemp\": "     + String(mlx90614_data.ObjTemp, 1)    + ",";
-    jsonResponse += "\"CO2\": "         + String(scd41_data.co2, 0)           + ",";
-    jsonResponse += "\"Temp\": "        + String(scd41_data.temperature, 1)   + ",";
-    jsonResponse += "\"Humi\": "        + String(scd41_data.humidity, 1)      + ",";
-    jsonResponse += "\"LVIS\": "        + String(tsl2591_data.vis)            + ",";
-    jsonResponse += "\"LNIR\": "        + String(tsl2591_data.nir)            + ",";
-    jsonResponse += "\"LFULL\": "       + String(tsl2591_data.lux)            + ",";
-    jsonResponse += "\"WIFI\": "        + String(wifi_data.WifiSignal)        + ",";
+    jsonResponse += "\"AO0\": " + String(ads1015_data.ai0, 1) + ",";
+    jsonResponse += "\"AO1\": " + String(ads1015_data.ai1, 1) + ",";
+    jsonResponse += "\"AO2\": " + String(ads1015_data.ai2, 1) + ",";
+    jsonResponse += "\"AO3\": " + String(ads1015_data.ai3, 1) + ",";
+    jsonResponse += "\"BME680_Temp\": " + String(bme680_data.temperature, 1) + ",";
+    jsonResponse += "\"BME680_Humi\": " + String(bme680_data.humidity, 1) + ",";
+    jsonResponse += "\"BME680_Pres\": " + String(bme680_data.pressure, 1) + ",";
+    jsonResponse += "\"BME680_AQ\": " + String(bme680_data.airquality, 1) + ",";
+    jsonResponse += "\"BME680_AQ\": " + String(bme680_data.airquality, 1) + ",";
+    jsonResponse += "\"D6410_DIR\": " + String(d6410_data.windDIR) + ",";
+    jsonResponse += "\"D6410_SPD\": " + String(d6410_data.windSpeed_ms) + ",";
+    jsonResponse += "\"PM1.0\": " + String(hm330x_data.PM1) + ",";
+    jsonResponse += "\"PM2.5\": " + String(hm330x_data.PM25) + ",";
+    jsonResponse += "\"PM10\": " + String(hm330x_data.PM10) + ",";
+    jsonResponse += "\"WindMS\": " + String(mdws_data.windms) + ",";
+    jsonResponse += "\"Temp\": " + String(mdws_data.temperature) + ",";
+    jsonResponse += "\"AmbiTemp\": " + String(mlx90614_data.AmbiTemp, 1) + ",";
+    jsonResponse += "\"ObjTemp\": " + String(mlx90614_data.ObjTemp, 1) + ",";
+    jsonResponse += "\"CO2\": " + String(scd41_data.co2, 0) + ",";
+    jsonResponse += "\"Temp\": " + String(scd41_data.temperature, 1) + ",";
+    jsonResponse += "\"Humi\": " + String(scd41_data.humidity, 1) + ",";
+    jsonResponse += "\"LVIS\": " + String(tsl2591_data.vis) + ",";
+    jsonResponse += "\"LNIR\": " + String(tsl2591_data.nir) + ",";
+    jsonResponse += "\"DP\": " + String(dewpoint_data.dewpoint) + ",";
+    jsonResponse += "\"SQM_FREQ\": " + String(sqi_data.sqi_freq) + ",";
+    jsonResponse += "\"SQM_NORM\": " + String(sqi_data.sqi_norm) + ",";
+    jsonResponse += "\"AQI\": " + String(aqi_data.aqi_idx) + ",";
+    jsonResponse += "\"WIFI\": " + String(wifi_data.WifiSignal) + ",";
     jsonResponse += "}";
 
     request->send(200, "application/json", jsonResponse);
 
     jsonResponse += "}";
 
-    request->send(200, "application/json", jsonResponse); });
+    request->send(200, "application/json", jsonResponse);
+  });
 
   Serial.printf("JSON Server started\n");
 
@@ -573,9 +571,7 @@ void setup()
 
 //------------------------------------------------------------------------------
 /**
- * Main loop, nothing to do due to threads ...
+ * @brief Main loop, nothing to do due to threads ...
  *
  */
-void loop()
-{
-}
+void loop() { }
