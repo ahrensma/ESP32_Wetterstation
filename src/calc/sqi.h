@@ -34,8 +34,18 @@ struct SQI_DATA {
   float sqi_norm;
 };
 
+/**
+ * @brief
+ *
+ * @param sqm_data
+ */
 void calcSQI_FREQ(SQI_DATA* sqm_data);
 
+/**
+ * @brief
+ *
+ * @param sqm_data
+ */
 void calcSQI_NORM(SQI_DATA* sqm_data);
 
 #endif // _SQM_H

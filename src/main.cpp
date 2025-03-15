@@ -88,7 +88,9 @@ void onOTAEnd(bool success)
   } else {
     Serial.println("There was an error during OTA update!");
   }
-} //------------------------------------------------------------------------------
+}
+
+//------------------------------------------------------------------------------
 /**
  * @brief Sensor task 1 -- ADA1015
  *
@@ -435,6 +437,8 @@ void setup()
   }
   Serial.println("LittleFS Mounted!");
 
+  //-----------------------------------------------------------------------------
+  /* HTTP server */
   server.on("/", HTTP_GET, [](AsyncWebServerRequest* request) {
     File file = LittleFS.open("/index.html", "r");
     if (!file) {

@@ -15,5 +15,8 @@
     "C_Cpp.autocompleteAddParentheses": true,
     "C_Cpp.inlayHints.parameterNames.enabled": true,
     "C_Cpp.dimInactiveRegions": false,
-    "C_Cpp.errorSquiggles": "disabled"
+    "C_Cpp.errorSquiggles": "disabled",
+    "markdown-pdf.styles": [
+        "markdown.css"
+    ]
 }

@@ -1,3 +1,5 @@
+Source: ChatGPT !
+
 To determine the **calibration constant 'A'** experimentally, you need to compare your **sensor's frequency readings** with known **sky brightness values (mag/arcsec²)** measured by a **reference instrument**. Here’s how you can do it step by step:
 
 ---

@@ -26,16 +26,46 @@ struct DEWPOINT_DATA {
 const double R_STAR = 8314.3; // J/(kmol*K)
 const double MW = 18.016; // kg/kmol
 
+/**
+ *
+ * @param
+ * @return
+ */
 double SDD(double T);
-double DD(double r, double T);
-double relHumi(double T, double TD);
-double TD(double r, double T);
-double AF(double r, double TK);
 
 /**
  *
- * https://www.wetterochs.de/wetter/feuchte.html
+ * @param
+ * @return
+ */
+double DD(double r, double T);
+
+/**
  *
+ * @param
+ * @return
+ */
+double relHumi(double T, double TD);
+
+/**
+ *
+ * @param
+ * @return
+ */
+double TD(double r, double T);
+
+/**
+ *
+ * @param
+ * @return
+ */
+double AF(double r, double TK);
+
+/**
+ * @link https://www.wetterochs.de/wetter/feuchte.html
+ *
+ * @param
+ * @return
  */
 void calcDEWPOINT(DEWPOINT_DATA* dewpoint_data);
 
