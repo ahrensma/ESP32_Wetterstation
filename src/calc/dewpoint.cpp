@@ -7,6 +7,8 @@
 #include "dewpoint.h"
 #include <math.h>
 
+// TODO: Add a second source (url, sensor) and calculate the dew point-dependent ventilation display
+
 //-----------------------------------------------------------------------------
 double SDD(double T)
 {
