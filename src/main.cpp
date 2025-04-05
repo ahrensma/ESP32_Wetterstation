@@ -10,7 +10,17 @@
  *
  */
 
+#include "json_response.h" // Include the JSON helper file
+
 #include "config.h"
+
+unsigned long ota_progress_millis = 0;
+volatile int pulseCount = 0;
+unsigned long lastTime = 0;
+RainState rainStatus = NO_RAIN;
+volatile int dropCount = 0;
+unsigned long lastCheckTime = 0;
+uint16_t task_delay = 2000;
 
 //------------------------------------------------------------------------------
 WiFiClient espClient;
@@ -507,43 +517,9 @@ void setup()
 
   //-----------------------------------------------------------------------------
   /* REST API endpoint to return sensor values in JSON format */
+
   server.on("/api/sensors", HTTP_GET, [](AsyncWebServerRequest* request) {
-    String jsonResponse = "{";
-
-    jsonResponse += "\"AO0\": " + String(ads1015_data.ai0, 1) + ",";
-    jsonResponse += "\"AO1\": " + String(ads1015_data.ai1, 1) + ",";
-    jsonResponse += "\"AO2\": " + String(ads1015_data.ai2, 1) + ",";
-    jsonResponse += "\"AO3\": " + String(ads1015_data.ai3, 1) + ",";
-    jsonResponse += "\"BME680_Temp\": " + String(bme680_data.temperature, 1) + ",";
-    jsonResponse += "\"BME680_Humi\": " + String(bme680_data.humidity, 1) + ",";
-    jsonResponse += "\"BME680_Pres\": " + String(bme680_data.pressure, 1) + ",";
-    jsonResponse += "\"BME680_AQ\": " + String(bme680_data.airquality, 1) + ",";
-    jsonResponse += "\"BME680_AQ\": " + String(bme680_data.airquality, 1) + ",";
-    jsonResponse += "\"D6410_DIR\": " + String(d6410_data.windDIR) + ",";
-    jsonResponse += "\"D6410_SPD\": " + String(d6410_data.windSpeed_ms) + ",";
-    jsonResponse += "\"PM1.0\": " + String(hm330x_data.PM1) + ",";
-    jsonResponse += "\"PM2.5\": " + String(hm330x_data.PM25) + ",";
-    jsonResponse += "\"PM10\": " + String(hm330x_data.PM10) + ",";
-    jsonResponse += "\"WindMS\": " + String(mdws_data.windms) + ",";
-    jsonResponse += "\"Temp\": " + String(mdws_data.temperature) + ",";
-    jsonResponse += "\"AmbiTemp\": " + String(mlx90614_data.AmbiTemp, 1) + ",";
-    jsonResponse += "\"ObjTemp\": " + String(mlx90614_data.ObjTemp, 1) + ",";
-    jsonResponse += "\"CO2\": " + String(scd41_data.co2, 0) + ",";
-    jsonResponse += "\"Temp\": " + String(scd41_data.temperature, 1) + ",";
-    jsonResponse += "\"Humi\": " + String(scd41_data.humidity, 1) + ",";
-    jsonResponse += "\"LVIS\": " + String(tsl2591_data.vis) + ",";
-    jsonResponse += "\"LNIR\": " + String(tsl2591_data.nir) + ",";
-    jsonResponse += "\"DP\": " + String(dewpoint_data.dewpoint) + ",";
-    jsonResponse += "\"SQM_FREQ\": " + String(sqi_data.sqi_freq) + ",";
-    jsonResponse += "\"SQM_NORM\": " + String(sqi_data.sqi_norm) + ",";
-    jsonResponse += "\"AQI\": " + String(aqi_data.aqi_idx) + ",";
-    jsonResponse += "\"WIFI\": " + String(wifi_data.WifiSignal) + ",";
-    jsonResponse += "}";
-
-    request->send(200, "application/json", jsonResponse);
-
-    jsonResponse += "}";
-
+    String jsonResponse = getSensorsJson();
     request->send(200, "application/json", jsonResponse);
   });
 

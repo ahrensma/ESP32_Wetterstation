@@ -40,14 +40,16 @@
 #include "calc/dewpoint.h"
 #include "calc/sqi.h"
 
+#pragma once
+
 //------------------------------------------------------------------------------
 #define __APPNAME__ "ESP Wetterstation"
-#define __APPRELEASE__ 0.2
-#define __APPDATE__ "2025 Q1"
+#define __APPRELEASE__ 0.3
+#define __APPDATE__ "2025 Q2"
 
 //------------------------------------------------------------------------------
 /* OTA Variables */
-unsigned long ota_progress_millis = 0;
+// extern unsigned long ota_progress_millis = 0;
 
 //------------------------------------------------------------------------------
 /* Pin definition */
@@ -55,18 +57,18 @@ unsigned long ota_progress_millis = 0;
 #define RG11_ISR_PIN 3
 
 /* Interrupt Variables */
-volatile int pulseCount = 0; // Variable to track pulses
-unsigned long lastTime = 0;
+// extern volatile int pulseCount = 0; // Variable to track pulses
+// extern unsigned long lastTime = 0;
 const int pulsesPerRevolution = 20; // Adjust based on encoder specs
 const float anemometerFactor = 0.1; // Adjust based on your specific anemometer
 
 //------------------------------------------------------------------------------
 typedef enum { NO_RAIN, RAIN_DETECTED } RainState;
 
-RainState rainStatus = NO_RAIN;
+// extern RainState rainStatus = NO_RAIN;
 
-volatile int dropCount = 0;
-unsigned long lastCheckTime = 0;
+// extern volatile int dropCount = 0;
+// extern unsigned long lastCheckTime = 0;
 const unsigned long interval = 1000; // 1 second interval for drops per second calculation
 
 //------------------------------------------------------------------------------
@@ -74,7 +76,7 @@ const unsigned long interval = 1000; // 1 second interval for drops per second c
 #define SERIAL_OUTPUT false
 
 /* Task  delay time in milliseconds */
-uint16_t task_delay = 2000;
+// extern uint16_t task_delay = 2000;
 
 //------------------------------------------------------------------------------
 #endif /* _CONFIG_H */

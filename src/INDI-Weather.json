@@ -1,0 +1,42 @@
+{
+    "weather": {
+        "Davis Anemometer": {
+            "init": true,
+            "direction": 151,
+            "avg speed": 0,
+            "min speed": 0,
+            "max speed": 0,
+            "rotations": 0
+        },
+        "RG11 Rain Sensor": {
+            "init": true,
+            "mode": "drop detect",
+            "count": 0,
+            "drop freq": 0
+        },
+        "BME680": {
+            "init": true,
+            "Temp": 21.49938393,
+            "Pres": 1022.700012,
+            "Hum": 43.75934219,
+            "Air": 12946.86133
+        },
+        "MLX90614": {
+            "init": true,
+            "T amb": 30.73000526,
+            "T obj": 18.27001381
+        },
+        "TSL2591": {
+            "init": true,
+            "Lux": 28.95142555,
+            "Visible": 384,
+            "IR": 123,
+            "Gain": 16,
+            "Timing": 0
+        },
+        "Water": {
+            "init": true,
+            "wetness": 0
+        }
+    }
+}

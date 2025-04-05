@@ -1,0 +1,74 @@
+{
+    "weather": {
+        "Davis Anemometer": {
+            "init": true,
+            "direction": 0,
+            "avg speed": 0,
+            "min speed": 0,
+            "max speed": 0,
+            "rotations": 0
+        },
+        "RG11 Rain Sensor": {
+            "init": true,
+            "mode": "drop detect",
+            "count": 0,
+            "drop freq": 0
+        },
+        "BME680": {
+            "init": true,
+            "Temp": 22.00482559,
+            "Hum": 43.03099060,
+            "Pres": 1021.92999268,
+            "Air": 5.00000000
+        },
+        "MLX90614": {
+            "init": true,
+            "T amb": 21.05001259,
+            "T obj": 21.01000404
+        },
+        "TSL2591": {
+            "init": true,
+            "Lux": 150,
+            "Visible": ,
+            "IR": ,
+            "Gain": 16,
+            "Timing": 0
+        },
+        "Water": {
+            "init": true,
+            "wetness": 0
+        },
+        "ADS1015": {
+            "AO0": 0.9,
+            "AO1": 5.2,
+            "AO2": 1.4,
+            "AO3": 0.0
+        },
+        "SCD41": {
+            "CO2": 900,
+            "Temp": 22.2,
+            "Humi": 43.5
+        },
+        "HM330x": {
+            "PM1.0": 1,
+            "PM2.5": 1,
+            "PM10": 1
+        },
+        "MDWS": {
+            "WindMS": nan
+        },
+        "DewPoint": {
+            "DP": 8.87
+        },
+        "SQI": {
+            "SQM_FREQ": 0.00,
+            "SQM_NORM": 0.00
+        },
+        "AQI": {
+            "AQI": 1
+        },
+        "WiFi": {
+            "WIFI": 53
+        }
+    }
+}

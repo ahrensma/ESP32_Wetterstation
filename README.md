@@ -14,6 +14,10 @@
 
 ## 1. Features
 
+### Server / Client structure
+
+<img src="./doc/hardware_layout-Server-Client.png" alt="Hardware layout server client structure" width="500">
+
 ### Webservices
 
 |                |                                  |
@@ -40,24 +44,24 @@ see details in [How to calibrate the SQI](doc/Calibrate_SQI.md)
 
 ### PM₂.₅ / PM₁₀ (µg/m³) AQI Breakpoints
 
-| **AQI Range** | **PM₂.₅ (µg/m³)** | **AQI Range** | **PM₁₀ (µg/m³)**  |
-|--------------:|------------------:|--------------:|------------------:|
-| 0 - 50        | 0.0 - 12.0        | 0 - 50        | 0 - 54            |
-| 51 - 100      | 12.1 - 35.4       | 51 - 100      | 55 - 154          |
-| 101 - 150     | 35.5 - 55.4       | 101 - 150     | 155 - 254         |
-| 151 - 200     | 55.5 - 150.4      | 151 - 200     | 255 - 354         |
-| 201 - 300     | 150.5 - 250.4     | 201 - 300     | 355 - 424         |
-| 301 - 400     | 250.5 - 350.4     | 301 - 400     | 425 - 504         |
-| 401 - 500     | 350.5 - 500.4     | 401 - 500     | 505 - 604         |
+| **AQI Range** | **PM₂.₅ (µg/m³)** | **AQI Range** | **PM₁₀ (µg/m³)** |
+| ------------: | ----------------: | ------------: | ---------------: |
+|        0 - 50 |        0.0 - 12.0 |        0 - 50 |           0 - 54 |
+|      51 - 100 |       12.1 - 35.4 |      51 - 100 |         55 - 154 |
+|     101 - 150 |       35.5 - 55.4 |     101 - 150 |        155 - 254 |
+|     151 - 200 |      55.5 - 150.4 |     151 - 200 |        255 - 354 |
+|     201 - 300 |     150.5 - 250.4 |     201 - 300 |        355 - 424 |
+|     301 - 400 |     250.5 - 350.4 |     301 - 400 |        425 - 504 |
+|     401 - 500 |     350.5 - 500.4 |     401 - 500 |        505 - 604 |
 
 ### Dewpoint Calculation
 
 - <https://en.wikipedia.org/wiki/Dew_point>
 
 $$\gamma (T,\mathrm {RH} ) = \ln \left({\frac {\mathrm {RH} }{100}}\right)+{\frac {bT}{c+T}} $$
-$$T_{\mathrm {d} }         = {\frac {c\gamma (T,\mathrm {RH} )}{b-\gamma (T,\mathrm {RH} )}} $$
-$$b                        = 17.625   $$
-$$c                        = 243.04°C $$
+$$T\_{\mathrm {d} } = {\frac {c\gamma (T,\mathrm {RH} )}{b-\gamma (T,\mathrm {RH} )}} $$
+$$b = 17.625 $$
+$$c = 243.04°C $$
 
 <br><a href="#esp32-wetterstation"><img src="./doc/top.png" alt="Go to top" style="float: right;" width="20" height="20"></a>
 
@@ -69,9 +73,10 @@ $$c                        = 243.04°C $$
 
 #### ADS1015 (i2c)
 
- - 4 port 12 bit AD converter
+- 4 port 12 bit AD converter
 
 #### BME680 (i2c)
+
 Enviroment sensor
 
 - Temperature
@@ -80,41 +85,48 @@ Enviroment sensor
 - CO2
 
 #### HM330X (i2c)
- Laser dust detection sensor
 
- - PM1
- - PM25
- - PM10
+Laser dust detection sensor
+
+- PM1
+- PM25
+- PM10
 
 #### Davis Instruments Wind Sensor 6410 (d0, a3)
+
 Wind direction vane, wind speed sensor
 
 - Wind speed: Reed sensor based rotation encoder
 - Wind direction: 20 k&Omega; potentiomete
 
 #### Modern Devices Wind Sensor Ref.B (a0, a1)
+
 Aneometer
 
 - Wind speed
 - Temperature
 
 #### MLX90614 (i2c)
+
 Infrared thermopile temperture sensor
 
 - Ambiente temperature
 - Object temperature
 
 #### RG 11 (d2)
+
 Optical Rain Gauge -> https://rainsensors.com/products/rg-11/
 
 -
 
 #### RS 12 (d3)
+
 Rain sensor
 
 -
 
 #### SCD41 (i2c)
+
 Photoacoustic NDIR senso
 
 - CO2
@@ -122,6 +134,7 @@ Photoacoustic NDIR senso
 - Humidity
 
 #### TSL2591 (i2c)
+
 High dynamic range digital light sensor
 
 - VIS
@@ -140,13 +153,12 @@ High dynamic range digital light sensor
 
 After installing the libraries change in
 
-*.pio/build/seeed_xiao_esp32s3/ElegantOTA/src/ElegantOTA.h*
+_.pio/build/seeed_xiao_esp32s3/ElegantOTA/src/ElegantOTA.h_
 
 0 to 1
 
 ```html
-# ifndef ELEGANTOTA_USE_ASYNC_WEBSERVER
-    #define ELEGANTOTA_USE_ASYNC_WEBSERVER 1
+# ifndef ELEGANTOTA_USE_ASYNC_WEBSERVER #define ELEGANTOTA_USE_ASYNC_WEBSERVER 1
 # endif
 ```
 
@@ -178,11 +190,11 @@ const char *http_password = "xxx";
 
 #### ESP32
 
-<code style="color :#69ADFF">**D1**</code> -> Interrupt input  (Davis Instruments Wind Sensor 6410)
+<code style="color :#69ADFF">**D1**</code> -> Interrupt input (Davis Instruments Wind Sensor 6410)
 
-<code style="color :#69ADFF">**D2**</code> -> Interrupt input  (RG 11)
+<code style="color :#69ADFF">**D2**</code> -> Interrupt input (RG 11)
 
-<code style="color :#69ADFF">**D3**</code> -> Interrupt input  (RS 12)
+<code style="color :#69ADFF">**D3**</code> -> Interrupt input (RS 12)
 
 <code style="color :#69ADFF">**D4**</code> -> SDA (I2C)
 
@@ -213,6 +225,7 @@ const char *http_password = "xxx";
 - [INDI Library Weatherradio](https://github.com/indilib/indi-3rdparty/tree/master/indi-duino/devices/Firmwares/weatherradio)
 
 ### Special articles
+
 - [Gauge sensors](https://randomnerdtutorials.com/esp32-web-server-gauges/)
 
 <br><a href="#esp32-wetterstation"><img src="./doc/top.png" alt="Go to top" style="float: right;" width="20" height="20"></a>
@@ -230,13 +243,16 @@ This project is licensed under the GNU General Public License v3.0 - see the [LI
 ## 7. Changelog
 
 ### [0.2] - xxxx-xx-xx &nbsp; &nbsp;![Hardware layout](./doc/commit.png) &nbsp;
+
 #### Updates
+
 - SQM
 - AQI
 - Dewpoint
 - Documentation
 
-### [0.1] - 2025-03-01 &nbsp; &nbsp;![Hardware layout](./doc/commit.png) &nbsp; 1fc1c3b  
+### [0.1] - 2025-03-01 &nbsp; &nbsp;![Hardware layout](./doc/commit.png) &nbsp; 1fc1c3b
+
 #### Initial Release
 
 <br><a href="#esp32-wetterstation"><img src="./doc/top.png" alt="Go to top" style="float: right;" width="20" height="20"></a>
