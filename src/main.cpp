@@ -1,8 +1,8 @@
 /**
  * @file main.cpp
  * @author Martin Ahrens
- * @date 2025_Q1
- * @version 0.1
+ * @date 2025_Q2
+ * @version 0.3
  *
  * @mainpage ESP Wetterstation
  *
@@ -10,17 +10,11 @@
  *
  */
 
-#include "json_response.h" // Include the JSON helper file
+#include "client/read_json.h"
+#include "server/json_response.h" // Include the JSON helper file
 
 #include "config.h"
-
-unsigned long ota_progress_millis = 0;
-volatile int pulseCount = 0;
-unsigned long lastTime = 0;
-RainState rainStatus = NO_RAIN;
-volatile int dropCount = 0;
-unsigned long lastCheckTime = 0;
-uint16_t task_delay = 2000;
+#include "main.h"
 
 //------------------------------------------------------------------------------
 WiFiClient espClient;
@@ -41,6 +35,7 @@ TaskHandle_t SensorTask9;
 TaskHandle_t SensorTask10;
 TaskHandle_t SensorTask11;
 TaskHandle_t SensorTask12;
+TaskHandle_t SensorTask13;
 
 //------------------------------------------------------------------------------
 ADS1015_DATA ads1015_data;
@@ -55,6 +50,8 @@ SCD41_DATA scd41_data;
 SH1106_DATA sh1106_data;
 TSL2591_DATA tsl2591_data;
 WIFI_DATA wifi_data;
+
+JSON_CLIENT_DATA json_client_data;
 
 DEWPOINT_DATA dewpoint_data;
 AQI_DATA aqi_data;
@@ -393,6 +390,21 @@ void sensorTask12(void* parameter)
 
 //------------------------------------------------------------------------------
 /**
+ * @brief Sensor task 13 -- JSON CLIENT
+ *
+ */
+void sensorTask13(void* parameter)
+{
+  while (true) {
+    fetchJSON(&json_client_data);
+    Serial.println(json_client_data.temp);
+    
+    vTaskDelay(pdMS_TO_TICKS(task_delay));
+  }
+}
+
+//------------------------------------------------------------------------------
+/**
  * @brief Setup all
  *
  */
@@ -431,6 +443,8 @@ void setup()
   initSCD41();
   initSH1106();
   initTSL2591();
+
+  initJSONClient();
 
   Serial.printf("Sensors connected\n");
 
@@ -493,8 +507,14 @@ void setup()
     html.replace("{{skyquality_freq}}", String(sqi_data.sqi_freq).c_str());
     html.replace("{{airqualityindex}}", String(aqi_data.aqi_idx).c_str());
     html.replace("{{wifi_data_WifiSignal}}", String(wifi_data.WifiSignal).c_str());
-
-    request->send(200, "text/html", html);
+    // Replace template placeholders with JSON data
+    html.replace("{{json_client_init}}", json_client_data.status ? "true" : "false");
+    html.replace("{{json_client_temp}}", String(json_client_data.temp, 1));
+    html.replace("{{json_client_pres}}", String(json_client_data.pres, 1));
+    html.replace("{{json_client_humi}}", String(json_client_data.humi, 1));
+    html.replace("{{json_client_airq}}", String(json_client_data.airq, 1));
+    
+        request->send(200, "text/html", html);
   });
 
   server.on("/style.css", HTTP_GET,
@@ -545,6 +565,7 @@ void setup()
   xTaskCreatePinnedToCore(sensorTask10, "SensorTask10", 4096, NULL, 1, &SensorTask10, 1);
   xTaskCreatePinnedToCore(sensorTask11, "SensorTask11", 4096, NULL, 1, &SensorTask11, 1);
   xTaskCreatePinnedToCore(sensorTask12, "SensorTask12", 4096, NULL, 1, &SensorTask12, 1);
+  xTaskCreatePinnedToCore(sensorTask13, "SensorTask13", 4096, NULL, 1, &SensorTask13, 1);
 
   Serial.printf("Startup finished\n\n");
 }

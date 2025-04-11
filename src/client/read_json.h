@@ -10,8 +10,24 @@
 #include <ArduinoJson.h>
 #include <HTTPClient.h>
 
+/**
+ * @struct JSON_CLIENT_DATA
+ * @param bool status
+ * @param float temp
+ * @param float pres
+ * @param float humi
+ * @param float airq
+ */
+struct JSON_CLIENT_DATA {
+    bool status;
+    float temp;
+    float pres;
+    float humi;
+    float airq;
+  };
+
 void initJSONClient();
 
-void fetchJSON();
+void fetchJSON(JSON_CLIENT_DATA* json_client_data);
 
-#endif /* _READ_JSON_H */
+#endif /* _READ_JSON_H */ 

@@ -48,35 +48,15 @@
 #define __APPDATE__ "2025 Q2"
 
 //------------------------------------------------------------------------------
-/* OTA Variables */
-// extern unsigned long ota_progress_millis = 0;
-
-//------------------------------------------------------------------------------
 /* Pin definition */
 #define ANEOMETER_ISR_PIN 2
 #define RG11_ISR_PIN 3
 
-/* Interrupt Variables */
-// extern volatile int pulseCount = 0; // Variable to track pulses
-// extern unsigned long lastTime = 0;
-const int pulsesPerRevolution = 20; // Adjust based on encoder specs
-const float anemometerFactor = 0.1; // Adjust based on your specific anemometer
-
-//------------------------------------------------------------------------------
+/* Rain State */
 typedef enum { NO_RAIN, RAIN_DETECTED } RainState;
 
-// extern RainState rainStatus = NO_RAIN;
-
-// extern volatile int dropCount = 0;
-// extern unsigned long lastCheckTime = 0;
-const unsigned long interval = 1000; // 1 second interval for drops per second calculation
-
-//------------------------------------------------------------------------------
 /* Serial output yes or no */
 #define SERIAL_OUTPUT false
-
-/* Task  delay time in milliseconds */
-// extern uint16_t task_delay = 2000;
 
 //------------------------------------------------------------------------------
 #endif /* _CONFIG_H */

@@ -242,14 +242,18 @@ This project is licensed under the GNU General Public License v3.0 - see the [LI
 
 ## 7. Changelog
 
+### [0.3] - 2025-04-05 &nbsp; &nbsp;![Hardware layout](./doc/commit.png) &nbsp; 8b681e4
+
+- Modify the JSON part and put it in an own cpp/h file, not the JSON structure is similar to the INDI lib (https://github.com/indilib/indi-3rdparty/tree/master/indi-duino/devices/Firmwares/weatherradio)
+- Devide the mysecrets file in cpp/h
+- Add (not finally)
+  - Sky Quality Meter (SQM)
+  - Air Quality Index (AQI)
+  - Dewpoint calculator
+
 ### [0.2] - xxxx-xx-xx &nbsp; &nbsp;![Hardware layout](./doc/commit.png) &nbsp;
 
 #### Updates
-
-- SQM
-- AQI
-- Dewpoint
-- Documentation
 
 ### [0.1] - 2025-03-01 &nbsp; &nbsp;![Hardware layout](./doc/commit.png) &nbsp; 1fc1c3b
 
