@@ -85,7 +85,7 @@ String getSensorsJson()
 
   // Dew Point sensor value
   jsonResponse += "\"DewPoint\":{";
-  jsonResponse += "\"DP\": " + String(dewpoint_data.dewpoint);
+  jsonResponse += "\"DP\": " + String(dewpoint_indoor.dewpoint);
   jsonResponse += "},";
 
   // SQI sensor values

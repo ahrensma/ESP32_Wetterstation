@@ -53,7 +53,9 @@ WIFI_DATA wifi_data;
 
 JSON_CLIENT_DATA json_client_data;
 
-DEWPOINT_DATA dewpoint_data;
+DEWPOINT_DATA dewpoint_indoor;
+DEWPOINT_DATA dewpoint_outdoor;
+
 AQI_DATA aqi_data;
 SQI_DATA sqi_data;
 
@@ -128,11 +130,6 @@ void sensorTask2(void* parameter)
   while (true) {
     getBME680Values(&bme680_data);
 
-    dewpoint_data.temp = bme680_data.temperature;
-    dewpoint_data.humi = bme680_data.humidity;
-
-    calcDEWPOINT(&dewpoint_data);
-
     if (bme680_data.status == false) {
       Serial.println("Failed to perform reading BME680.");
     }
@@ -142,7 +139,6 @@ void sensorTask2(void* parameter)
       Serial.printf("Humi     = %.1f %%   \n", bme680_data.humidity);
       Serial.printf("Pres     = %.1f mbar \n", bme680_data.pressure);
       Serial.printf("AQ       = %.1f AQI  \n", bme680_data.airquality);
-      Serial.printf("Dewpoint = %.1f ºC   \n", dewpoint_data.dewpoint);
     }
     vTaskDelay(pdMS_TO_TICKS(task_delay));
   }
@@ -397,8 +393,29 @@ void sensorTask13(void* parameter)
 {
   while (true) {
     fetchJSON(&json_client_data);
-    Serial.println(json_client_data.temp);
-    
+
+    dewpoint_indoor.temp = bme680_data.temperature;
+    dewpoint_indoor.humi = bme680_data.humidity;
+    Serial.printf("dewpoint_indoor.temp  : %.1f \n", dewpoint_indoor.temp);
+    Serial.printf("dewpoint_indoor.humi  : %.1f \n", dewpoint_indoor.humi);
+
+    calcDEWPOINT(&dewpoint_indoor);
+
+    dewpoint_outdoor.temp = json_client_data.temp;
+    dewpoint_outdoor.humi = json_client_data.humi;
+    Serial.printf("dewpoint_outdoor.temp  : %.1f \n", dewpoint_outdoor.temp);
+    Serial.printf("dewpoint_outdoor.humi  : %.1f \n", dewpoint_outdoor.humi);
+
+    calcDEWPOINT(&dewpoint_outdoor);
+
+    Serial.printf("Dewpoint indoor  : %.1f \n", dewpoint_indoor.dewpoint);
+    Serial.printf("Dewpoint outdoor : %.1f \n", dewpoint_outdoor.dewpoint);
+
+    if (dewpoint_indoor.dewpoint > dewpoint_outdoor.dewpoint)
+      Serial.println("Lüften !!!");
+    else
+      Serial.println("NIcht lüften !!!");
+
     vTaskDelay(pdMS_TO_TICKS(task_delay));
   }
 }
@@ -502,7 +519,7 @@ void setup()
     html.replace("{{tsl2591_data_vis}}", String(tsl2591_data.vis).c_str());
     html.replace("{{tsl2591_data_nir}}", String(tsl2591_data.nir).c_str());
     html.replace("{{tsl2591_data_lux}}", String(tsl2591_data.lux).c_str());
-    html.replace("{{dewpoint}}", String(dewpoint_data.dewpoint).c_str());
+    html.replace("{{dewpoint}}", String(dewpoint_indoor.dewpoint).c_str());
     html.replace("{{skyquality_norm}}", String(sqi_data.sqi_norm).c_str());
     html.replace("{{skyquality_freq}}", String(sqi_data.sqi_freq).c_str());
     html.replace("{{airqualityindex}}", String(aqi_data.aqi_idx).c_str());
@@ -513,8 +530,8 @@ void setup()
     html.replace("{{json_client_pres}}", String(json_client_data.pres, 1));
     html.replace("{{json_client_humi}}", String(json_client_data.humi, 1));
     html.replace("{{json_client_airq}}", String(json_client_data.airq, 1));
-    
-        request->send(200, "text/html", html);
+
+    request->send(200, "text/html", html);
   });
 
   server.on("/style.css", HTTP_GET,

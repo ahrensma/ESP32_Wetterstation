@@ -17,7 +17,7 @@ extern SCD41_DATA scd41_data;
 extern SH1106_DATA sh1106_data;
 extern TSL2591_DATA tsl2591_data;
 extern WIFI_DATA wifi_data;
-extern DEWPOINT_DATA dewpoint_data;
+extern DEWPOINT_DATA dewpoint_indoor;
 extern AQI_DATA aqi_data;
 extern SQI_DATA sqi_data;
 

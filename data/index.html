@@ -4,229 +4,477 @@
 <head>
     <title>{{APPNAME}}</title>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <!-- If you want uninterrupted operation without periodic full page reload,
+         consider removing or commenting out the meta refresh -->
     <meta http-equiv='refresh' content='10'>
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" type="text/css" href="style.css">
+    <!-- Canvas Gauges Library -->
     <script src="https://cdn.jsdelivr.net/npm/@mikhus/canvas-gauges@2.1.7/dist/all.min.js"></script>
+    <!-- Chart.js for the Real-Time Chart -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Main tab styles */
+        .tab {
+            display: none;
+        }
+
+        .tab.active {
+            display: block;
+        }
+
+        .tab-buttons {
+            text-align: center;
+            margin-bottom: 1em;
+        }
+
+        .tab-buttons button {
+            padding: 10px 20px;
+            margin: 0 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .tab-buttons button.active {
+            background-color: #007BFF;
+            color: white;
+        }
+
+        table {
+            margin: auto;
+            width: 90%;
+        }
+
+        /* Sub-tab styles (for the Second Tab) */
+        .sub-tab {
+            display: none;
+        }
+
+        .sub-tab.active {
+            display: block;
+        }
+
+        .sub-tab-buttons {
+            text-align: center;
+            margin-bottom: 1em;
+        }
+
+        .sub-tab-buttons button {
+            padding: 8px 16px;
+            margin: 0 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .sub-tab-buttons button.active {
+            background-color: #28a745;
+            color: white;
+        }
+    </style>
+    <script>
+        // ----- Tab State Persistence -----
+        function showTab(tabIndex) {
+            localStorage.setItem('activeMainTab', tabIndex);
+            const tabs = document.querySelectorAll('.tab');
+            const buttons = document.querySelectorAll('.tab-buttons button');
+            tabs.forEach((tab, i) => {
+                tab.classList.toggle('active', i === tabIndex);
+                buttons[i].classList.toggle('active', i === tabIndex);
+            });
+        }
+
+        function showSubTab(subIndex) {
+            localStorage.setItem('activeSubTab', subIndex);
+            const subTabs = document.querySelectorAll('.sub-tab');
+            const subButtons = document.querySelectorAll('.sub-tab-buttons button');
+            subTabs.forEach((tab, i) => {
+                tab.classList.toggle('active', i === subIndex);
+                subButtons[i].classList.toggle('active', i === subIndex);
+            });
+        }
+
+        window.onload = () => {
+            const activeMainTab = localStorage.getItem('activeMainTab');
+            const activeSubTab = localStorage.getItem('activeSubTab');
+            showTab(activeMainTab ? parseInt(activeMainTab, 10) : 0);
+            showSubTab(activeSubTab ? parseInt(activeSubTab, 10) : 0);
+
+            // Restore chart data if available
+            const savedLabels = localStorage.getItem('chartLabels');
+            const savedData = localStorage.getItem('chartData');
+            if (savedLabels && savedData && window.chart) {
+                chart.data.labels = JSON.parse(savedLabels);
+                chart.data.datasets[0].data = JSON.parse(savedData);
+                chart.update();
+            }
+        };
+
+        // ----- Chart.js Setup for 1-Minute Updates -----
+        let chart;
+        document.addEventListener("DOMContentLoaded", function () {
+            const ctx = document.getElementById('realTimeChart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Temperature (°C)',
+                        data: [],
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        fill: false,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    animation: false,
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Time' }
+                        },
+                        y: {
+                            title: { display: true, text: 'Temperature (°C)' },
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+            // Restore previously saved chart data, if available
+            const savedLabels = localStorage.getItem('chartLabels');
+            const savedData = localStorage.getItem('chartData');
+            if (savedLabels && savedData) {
+                chart.data.labels = JSON.parse(savedLabels);
+                chart.data.datasets[0].data = JSON.parse(savedData);
+                chart.update();
+            }
+            // Update chart every minute (60,000 ms)
+            setInterval(() => {
+                const now = new Date();
+                const temperature = (20 + Math.random() * 5).toFixed(2); // Replace with real sensor data if available
+                chart.data.labels.push(now.toLocaleTimeString());
+                chart.data.datasets[0].data.push(parseFloat(temperature));
+                // Limit to the most recent 1440 entries (24 hours at 1-min intervals)
+                if (chart.data.labels.length > 1440) {
+                    chart.data.labels.shift();
+                    chart.data.datasets[0].data.shift();
+                }
+                chart.update();
+                // Save updated chart data to localStorage
+                localStorage.setItem('chartLabels', JSON.stringify(chart.data.labels));
+                localStorage.setItem('chartData', JSON.stringify(chart.data.datasets[0].data));
+            }, 60000);
+        });
+
+        // ----- Clear Graph Function -----
+        function clearGraph() {
+            if (chart) {
+                chart.data.labels = [];
+                chart.data.datasets[0].data = [];
+                chart.update();
+            }
+            localStorage.removeItem('chartLabels');
+            localStorage.removeItem('chartData');
+            alert("Graph data has been cleared.");
+        }
+
+        // ----- Export Graph Data as CSV -----
+        function exportGraphData() {
+            if (!chart) {
+                alert("No chart data available to export.");
+                return;
+            }
+            const labels = chart.data.labels;
+            const data = chart.data.datasets[0].data;
+            let csvContent = "Time,Temperature (°C)\n";
+            for (let i = 0; i < labels.length; i++) {
+                csvContent += labels[i] + "," + data[i] + "\n";
+            }
+            const encodedUri = encodeURI("data:text/csv;charset=utf-8," + csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "graph_data.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // ----- Live Log View Update -----
+        function addLogEntry() {
+            const logBox = document.getElementById('logBox');
+            const entry = document.createElement('div');
+            entry.textContent = new Date().toLocaleTimeString() + " - Sensor reading logged.";
+            logBox.appendChild(entry);
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+        setInterval(addLogEntry, 3000);
+    </script>
 </head>
 
 <body>
     <center>
         <h2>{{APPNAME}}</h2>
     </center>
-    <table>
 
-        <tr class='title'>
-            <th>Sensor </th>
-            <th>Parameter</th>
-            <th>Value</th>
-            <th>Unit</th>
-        </tr>
-        <tr class='ads1015'>
-            <td>ADS1015 </th>
-            <td>AO0</td>
-            <td>{{ads1015_data_ai0}} </td>
-            <td>V</td>
-        </tr>
-        <tr class='ads1015'>
-            <td>
-                </th>
-            <td>AO1</td>
-            <td>{{ads1015_data_ai1}} </td>
-            <td>V</td>
-        </tr>
-        <tr class='ads1015'>
-            <td>
-                </th>
-            <td>AO2</td>
-            <td>{{ads1015_data_ai2}} </td>
-            <td>V</td>
-        </tr>
-        <tr class='ads1015'>
-            <td>
-                </th>
-            <td>AO3</td>
-            <td>{{ads1015_data_ai3}} </td>
-            <td>V</td>
-        </tr>
-        <tr class='bme680'>
-            <td>BME680 </th>
-            <td>Temp</td>
-            <td>{{bme680_data_temperature}} </td>
-            <td>&#176;C</td>
-        </tr>
-        <tr class='bme680'>
-            <td>
-                </th>
-            <td>Humi</td>
-            <td>{{bme680_data_humidity}} </td>
-            <td>%</td>
-        </tr>
-        <tr class='bme680'>
-            <td>
-                </th>
-            <td>Pres</td>
-            <td>{{bme680_data_pressure}} </td>
-            <td>mbar</td>
-        </tr>
-        <tr class='bme680'>
-            <td>
-                </th>
-            <td>AQ</td>
-            <td>{{bme680_data_airquality}} </td>
-            <td>AQI</td>
-        </tr>
-        <tr class='d6410'>
-            <td>David 6410 </th>
-            <td>Wind</td>
-            <td>{{d6410_data_windDIR}} </td>
-            <td>deg</td>
-        </tr>
-        <tr class='d6410'>
-            <td>
-                </th>
-            <td>Wind</td>
-            <td>{{d6410_data_windSPD}} </td>
-            <td>m/s</td>
-        </tr>
-        <tr class='hm330x'>
-            <td>HM330x </th>
-            <td>PM1.0</td>
-            <td>{{hm330x_data_PM1}} </td>
-            <td>&#181;g/m&#179;</td>
-        </tr>
-        <tr class='hm330x'>
-            <td>
-                </th>
-            <td>PM2.5</td>
-            <td>{{hm330x_data_PM25}} </td>
-            <td>&#181;g/m&#179;</td>
-        </tr>
-        <tr class='hm330x'>
-            <td>
-                </th>
-            <td>PM10</td>
-            <td>{{hm330x_data_PM10}} </td>
-            <td>&#181;g/m&#179;</td>
-        </tr>
-        <tr class='mdws'>
-            <td>WindSensor </th>
-            <td>Wind</td>
-            <td>{{mdws_data_windms}} </td>
-            <td>m/s</td>
-        </tr>
-        <tr class='mdws'>
-            <td>
-                </th>
-            <td>Temp</td>
-            <td>{{mdws_data_temperature}} </td>
-            <td>&#176;C</td>
-        </tr>
-        <tr class='mlx'>
-            <td>MLX90614 </th>
-            <td>AmbiTemp</td>
-            <td>{{mlx90614_data_AmbiTemp}} </td>
-            <td>&#176;C</td>
-        </tr>
-        <tr class='mlx'>
-            <td>
-                </th>
-            <td>ObjTemp</td>
-            <td>{{mlx90614_data_ObjTemp}} </td>
-            <td>&#176;C</td>
-        </tr>
-        <tr class='scd4'>
-            <td>SCD41 </th>
-            <td>CO2</td>
-            <td>{{scd41_data_co2}} </td>
-            <td>ppm</td>
-        </tr>
-        <tr class='scd4'>
-            <td>
-                </th>
-            <td>Temp</td>
-            <td>{{scd41_data_temperature}} </td>
-            <td>&#176;C</td>
-        </tr>
-        <tr class='scd4'>
-            <td>
-                </th>
-            <td>Humi</td>
-            <td>{{scd41_data_humidity}} </td>
-            <td>%</td>
-        </tr>
-        <tr class='tsl'>
-            <td>TSL2591 </th>
-            <td>LVIS</td>
-            <td>{{tsl2591_data_vis}} </td>
-            <td>lum</td>
-        </tr>
-        <tr class='tsl'>
-            <td>
-                </th>
-            <td>LNIR</td>
-            <td>{{tsl2591_data_nir}} </td>
-            <td>lum</td>
-        </tr>
-        <tr class='tsl'>
-            <td>
-                </th>
-            <td>LFULL</td>
-            <td>{{tsl2591_data_lux}} </td>
-            <td>lux</td>
-        </tr>
-        <tr class='data'>
-            <td>Data </th>
-            <td>Dewpoint</td>
-            <td>{{dewpoint}} </td>
-            <td>&#176;C</td>
-        </tr>
-        <tr class='data'>
-            <td>
-                </th>
-            <td>SQM_FREQ</td>
-            <td>{{skyquality_freq}} </td>
-            <td>a.u.</td>
-        </tr>
-        <tr class='data'>
-            <td>
-                </th>
-            <td>SQM_NORM</td>
-            <td>{{skyquality_norm}} </td>
-            <td>a.u.</td>
-        </tr>
-        <tr class='data'>
-            <td>
-                </th>
-            <td>AQI</td>
-            <td>{{airqualityindex}} </td>
-            <td>a.u.</td>
-        </tr>
-        <tr class='wifi'>
-            <td>WIFI </th>
-            <td>WIFI</td>
-            <td>{{wifi_data_WifiSignal}} </td>
-            <td>dBm</td>
-        </tr>
-        <tr class='app'>
-            <td>APP </th>
-            <td>APP Info</td>
-            <td>{{APPRELEASE}} </td>
-            <td>{{APPDATE}}
-        </tr>
-
-    </table>
-
-    <div class="gauge-container">
-        <canvas id="tempGauge" class="gauge"></canvas>
-        <canvas id="humGauge" class="gauge"></canvas>
+    <!-- Main Tab Navigation -->
+    <div class="tab-buttons">
+        <button onclick="showTab(0)">Sensor Data</button>
+        <button onclick="showTab(1)">Second Tab</button>
     </div>
-    <script src="script.js"></script>
-    <p>Sensor Init: {{json_client_init}} </p>
-    <p>Temperature: {{json_client_temp}} &#176;C</p>
-    <p>Pressure: {{json_client_pres}} mbar</p>
-    <p>Humidity: {{json_client_humi}} %</p>
-    <p>Air Quality: {{json_client_airq}} </p>
+
+    <!-- First Tab: Sensor Data Table -->
+    <div class="tab active">
+        <table>
+            <tr class="title">
+                <th>Sensor</th>
+                <th>Parameter</th>
+                <th>Value</th>
+                <th>Unit</th>
+            </tr>
+            <tr class="ads1015">
+                <td>ADS1015</td>
+                <td>AO0</td>
+                <td>{{ads1015_data_ai0}}</td>
+                <td>V</td>
+            </tr>
+            <tr class="ads1015">
+                <td></td>
+                <td>AO1</td>
+                <td>{{ads1015_data_ai1}}</td>
+                <td>V</td>
+            </tr>
+            <tr class="ads1015">
+                <td></td>
+                <td>AO2</td>
+                <td>{{ads1015_data_ai2}}</td>
+                <td>V</td>
+            </tr>
+            <tr class="ads1015">
+                <td></td>
+                <td>AO3</td>
+                <td>{{ads1015_data_ai3}}</td>
+                <td>V</td>
+            </tr>
+            <tr class="bme680">
+                <td>BME680</td>
+                <td>Temp</td>
+                <td>{{bme680_data_temperature}}</td>
+                <td>&#176;C</td>
+            </tr>
+            <tr class="bme680">
+                <td></td>
+                <td>Humi</td>
+                <td>{{bme680_data_humidity}}</td>
+                <td>%</td>
+            </tr>
+            <tr class="bme680">
+                <td></td>
+                <td>Pres</td>
+                <td>{{bme680_data_pressure}}</td>
+                <td>mbar</td>
+            </tr>
+            <tr class="bme680">
+                <td></td>
+                <td>AQ</td>
+                <td>{{bme680_data_airquality}}</td>
+                <td>AQI</td>
+            </tr>
+            <tr class="d6410">
+                <td>David 6410</td>
+                <td>Wind</td>
+                <td>{{d6410_data_windDIR}}</td>
+                <td>deg</td>
+            </tr>
+            <tr class="d6410">
+                <td></td>
+                <td>Wind</td>
+                <td>{{d6410_data_windSPD}}</td>
+                <td>m/s</td>
+            </tr>
+            <tr class="hm330x">
+                <td>HM330x</td>
+                <td>PM1.0</td>
+                <td>{{hm330x_data_PM1}}</td>
+                <td>&#181;g/m&#179;</td>
+            </tr>
+            <tr class="hm330x">
+                <td></td>
+                <td>PM2.5</td>
+                <td>{{hm330x_data_PM25}}</td>
+                <td>&#181;g/m&#179;</td>
+            </tr>
+            <tr class="hm330x">
+                <td></td>
+                <td>PM10</td>
+                <td>{{hm330x_data_PM10}}</td>
+                <td>&#181;g/m&#179;</td>
+            </tr>
+            <tr class="mdws">
+                <td>WindSensor</td>
+                <td>Wind</td>
+                <td>{{mdws_data_windms}}</td>
+                <td>m/s</td>
+            </tr>
+            <tr class="mdws">
+                <td></td>
+                <td>Temp</td>
+                <td>{{mdws_data_temperature}}</td>
+                <td>&#176;C</td>
+            </tr>
+            <tr class="mlx">
+                <td>MLX90614</td>
+                <td>AmbiTemp</td>
+                <td>{{mlx90614_data_AmbiTemp}}</td>
+                <td>&#176;C</td>
+            </tr>
+            <tr class="mlx">
+                <td></td>
+                <td>ObjTemp</td>
+                <td>{{mlx90614_data_ObjTemp}}</td>
+                <td>&#176;C</td>
+            </tr>
+            <tr class="scd4">
+                <td>SCD41</td>
+                <td>CO2</td>
+                <td>{{scd41_data_co2}}</td>
+                <td>ppm</td>
+            </tr>
+            <tr class="scd4">
+                <td></td>
+                <td>Temp</td>
+                <td>{{scd41_data_temperature}}</td>
+                <td>&#176;C</td>
+            </tr>
+            <tr class="scd4">
+                <td></td>
+                <td>Humi</td>
+                <td>{{scd41_data_humidity}}</td>
+                <td>%</td>
+            </tr>
+            <tr class="tsl">
+                <td>TSL2591</td>
+                <td>LVIS</td>
+                <td>{{tsl2591_data_vis}}</td>
+                <td>lum</td>
+            </tr>
+            <tr class="tsl">
+                <td></td>
+                <td>LNIR</td>
+                <td>{{tsl2591_data_nir}}</td>
+                <td>lum</td>
+            </tr>
+            <tr class="tsl">
+                <td></td>
+                <td>LFULL</td>
+                <td>{{tsl2591_data_lux}}</td>
+                <td>lux</td>
+            </tr>
+            <tr class="data">
+                <td>Data</td>
+                <td>Dewpoint</td>
+                <td>{{dewpoint}}</td>
+                <td>&#176;C</td>
+            </tr>
+            <tr class="data">
+                <td></td>
+                <td>SQM_FREQ</td>
+                <td>{{skyquality_freq}}</td>
+                <td>a.u.</td>
+            </tr>
+            <tr class="data">
+                <td></td>
+                <td>SQM_NORM</td>
+                <td>{{skyquality_norm}}</td>
+                <td>a.u.</td>
+            </tr>
+            <tr class="data">
+                <td></td>
+                <td>AQI</td>
+                <td>{{airqualityindex}}</td>
+                <td>a.u.</td>
+            </tr>
+            <tr class="wifi">
+                <td>WIFI</td>
+                <td>WIFI</td>
+                <td>{{wifi_data_WifiSignal}}</td>
+                <td>dBm</td>
+            </tr>
+            <tr class="app">
+                <td>APP</td>
+                <td>APP Info</td>
+                <td>{{APPRELEASE}}</td>
+                <td>{{APPDATE}}</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Second Main Tab: Contains Sub-Tabs -->
+    <div class="tab">
+        <!-- Sub-Tab Navigation -->
+        <div class="sub-tab-buttons">
+            <button onclick="showSubTab(0)">Chart</button>
+            <button onclick="showSubTab(1)">Log</button>
+            <button onclick="showSubTab(2)">Settings</button>
+            <button onclick="showSubTab(3)">Dashboard</button>
+        </div>
+
+        <!-- Sub-Tab 1: Real-Time Chart -->
+        <div class="sub-tab active">
+            <div style="width: 90%; height: 300px; margin: auto;">
+                <canvas id="realTimeChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Sub-Tab 2: Live Log View -->
+        <div class="sub-tab">
+            <div id="logBox"
+                style="border: 1px solid #ccc; padding: 10px; width: 90%; height: 200px; margin: auto; overflow-y: scroll;">
+                <!-- Log entries will appear here -->
+            </div>
+        </div>
+
+        <!-- Sub-Tab 3: Settings Panel -->
+        <div class="sub-tab">
+            <form id="settingsForm" style="width: 90%; margin: auto;">
+                <h3>Settings Panel</h3>
+                <label for="refreshRate">Refresh Rate (sec): </label>
+                <input type="number" id="refreshRate" name="refreshRate" value="10">
+                <br><br>
+                <label><input type="checkbox" id="sensor1" checked> Sensor 1</label>
+                <br>
+                <label><input type="checkbox" id="sensor2" checked> Sensor 2</label>
+                <br><br>
+                <button type="button" onclick="alert('Settings Updated!')">Update Settings</button>
+                <!-- Clear Graph Button -->
+                <button type="button" onclick="clearGraph()">Clear Graph</button>
+                <!-- Export Graph Data Button -->
+                <button type="button" onclick="exportGraphData()">Export Graph Data</button>
+            </form>
+        </div>
+
+        <!-- Sub-Tab 4: Mini Dashboard (canvas-gauges) -->
+        <div class="sub-tab">
+            <div style="display: flex; justify-content: space-around; flex-wrap: wrap;">
+                <canvas data-type="radial-gauge" data-width="200" data-height="200" data-units="°C" data-title="Temp"
+                    data-min-value="0" data-max-value="50" data-value="25" id="gaugeTemp"></canvas>
+                <canvas data-type="radial-gauge" data-width="200" data-height="200" data-units="%" data-title="Humidity"
+                    data-min-value="0" data-max-value="100" data-value="50" id="gaugeHumidity"></canvas>
+                <canvas data-type="radial-gauge" data-width="200" data-height="200" data-units="ppm" data-title="CO2"
+                    data-min-value="0" data-max-value="2000" data-value="400" id="gaugeCO2"></canvas>
+            </div>
+            <script>
+                // Update the gauges randomly every 5 seconds
+                setInterval(() => {
+                    const gaugeTemp = document.gauges.get('gaugeTemp');
+                    gaugeTemp.value = (20 + Math.random() * 10).toFixed(2);
+                    const gaugeHumidity = document.gauges.get('gaugeHumidity');
+                    gaugeHumidity.value = (40 + Math.random() * 20).toFixed(2);
+                    const gaugeCO2 = document.gauges.get('gaugeCO2');
+                    gaugeCO2.value = (400 + Math.random() * 100).toFixed(0);
+                }, 5000);
+            </script>
+        </div>
+    </div>
 </body>
 
 </html>

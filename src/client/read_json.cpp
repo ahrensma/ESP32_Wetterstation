@@ -1,7 +1,7 @@
 #include "read_json.h"
 #include <ArduinoJson.h> // Ensure the library is included
 
-const char* serverUrl = "http://192.168.1.108:3000/data";
+const char* serverUrl = "http://192.168.1.13";
 
 void initJSONClient() { Serial.println("JSON Client initialized"); }
 
@@ -13,8 +13,6 @@ void fetchJSON(JSON_CLIENT_DATA* json_client_data)
 
   if (httpResponseCode > 0) {
     String payload = http.getString();
-    // Serial.println("Received JSON:");
-    // Serial.println(payload);
 
     // Use StaticJsonDocument with a fixed capacity
     StaticJsonDocument<1024> doc; // Adjust size as needed
@@ -26,26 +24,29 @@ void fetchJSON(JSON_CLIENT_DATA* json_client_data)
       return;
     }
 
-    // Access the BME680 object from the JSON
-    JsonObject bme680 = doc["BME680"];
-    if (!bme680.isNull()) {
-      Serial.println("yeah");
-      
-      json_client_data->status = bme680["status"];
-      json_client_data->temp = bme680["temp"];
-      json_client_data->pres = bme680["pres"];
-      json_client_data->humi = bme680["humi"];
-      json_client_data->airq = bme680["airq"];
-     } else {
-      Serial.println("Oh no ...");
-      Serial.println("BME680 object not found in JSON.");
-      json_client_data->status = false;
-      json_client_data->temp = -999;
-      Serial.println(-999);
-      json_client_data->pres = -999;
-      json_client_data->humi = -999;
-      json_client_data->airq = -999;
-     }
+    if (doc.containsKey("weather")) {
+      JsonObject weather = doc["weather"];
+      if (weather.containsKey("BME680")) {
+        JsonObject bme680 = weather["BME680"];
+        Serial.println("BME680 object found in JSON.");
+
+        // Parse and store the sensor data
+        json_client_data->status = bme680["init"];
+        json_client_data->temp = bme680["Temp"];
+        json_client_data->pres = bme680["Pres"];
+        json_client_data->humi = bme680["Hum"];
+        json_client_data->airq = bme680["Air"];
+
+        // Print out the values to debug
+        Serial.print("Temperature: ");
+        Serial.println(json_client_data->temp);
+        Serial.print("Pressure: ");
+        Serial.println(json_client_data->pres);
+        Serial.print("Humidity: ");
+        Serial.println(json_client_data->humi);
+      }
+    }
+
   } else {
     Serial.print("HTTP Error: ");
     Serial.println(httpResponseCode);
