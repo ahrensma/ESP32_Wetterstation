@@ -4,8 +4,7 @@
 <head>
     <title>{{APPNAME}}</title>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <!-- If you want uninterrupted operation without periodic full page reload,
-         consider removing or commenting out the meta refresh -->
+
     <meta http-equiv='refresh' content='10'>
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" type="text/css" href="style.css">
@@ -109,104 +108,6 @@
             }
         };
 
-        // ----- Chart.js Setup for 1-Minute Updates -----
-        let chart;
-        document.addEventListener("DOMContentLoaded", function () {
-            const ctx = document.getElementById('realTimeChart').getContext('2d');
-            chart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: 'Temperature (°C)',
-                        data: [],
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        fill: false,
-                        tension: 0.1
-                    }]
-                },
-                options: {
-                    animation: false,
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: {
-                            title: { display: true, text: 'Time' }
-                        },
-                        y: {
-                            title: { display: true, text: 'Temperature (°C)' },
-                            beginAtZero: false
-                        }
-                    }
-                }
-            });
-            // Restore previously saved chart data, if available
-            const savedLabels = localStorage.getItem('chartLabels');
-            const savedData = localStorage.getItem('chartData');
-            if (savedLabels && savedData) {
-                chart.data.labels = JSON.parse(savedLabels);
-                chart.data.datasets[0].data = JSON.parse(savedData);
-                chart.update();
-            }
-            // Update chart every minute (60,000 ms)
-            setInterval(() => {
-                const now = new Date();
-                const temperature = (20 + Math.random() * 5).toFixed(2); // Replace with real sensor data if available
-                chart.data.labels.push(now.toLocaleTimeString());
-                chart.data.datasets[0].data.push(parseFloat(temperature));
-                // Limit to the most recent 1440 entries (24 hours at 1-min intervals)
-                if (chart.data.labels.length > 1440) {
-                    chart.data.labels.shift();
-                    chart.data.datasets[0].data.shift();
-                }
-                chart.update();
-                // Save updated chart data to localStorage
-                localStorage.setItem('chartLabels', JSON.stringify(chart.data.labels));
-                localStorage.setItem('chartData', JSON.stringify(chart.data.datasets[0].data));
-            }, 60000);
-        });
-
-        // ----- Clear Graph Function -----
-        function clearGraph() {
-            if (chart) {
-                chart.data.labels = [];
-                chart.data.datasets[0].data = [];
-                chart.update();
-            }
-            localStorage.removeItem('chartLabels');
-            localStorage.removeItem('chartData');
-            alert("Graph data has been cleared.");
-        }
-
-        // ----- Export Graph Data as CSV -----
-        function exportGraphData() {
-            if (!chart) {
-                alert("No chart data available to export.");
-                return;
-            }
-            const labels = chart.data.labels;
-            const data = chart.data.datasets[0].data;
-            let csvContent = "Time,Temperature (°C)\n";
-            for (let i = 0; i < labels.length; i++) {
-                csvContent += labels[i] + "," + data[i] + "\n";
-            }
-            const encodedUri = encodeURI("data:text/csv;charset=utf-8," + csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "graph_data.csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        // ----- Live Log View Update -----
-        function addLogEntry() {
-            const logBox = document.getElementById('logBox');
-            const entry = document.createElement('div');
-            entry.textContent = new Date().toLocaleTimeString() + " - Sensor reading logged.";
-            logBox.appendChild(entry);
-            logBox.scrollTop = logBox.scrollHeight;
-        }
         setInterval(addLogEntry, 3000);
     </script>
 </head>
@@ -218,8 +119,8 @@
 
     <!-- Main Tab Navigation -->
     <div class="tab-buttons">
-        <button onclick="showTab(0)">Sensor Data</button>
-        <button onclick="showTab(1)">Second Tab</button>
+        <button onclick="showTab(0)">Sensor 1</button>
+        <button onclick="showTab(1)">Sensor 2</button>
     </div>
 
     <!-- First Tab: Sensor Data Table -->
@@ -410,70 +311,41 @@
 
     <!-- Second Main Tab: Contains Sub-Tabs -->
     <div class="tab">
-        <!-- Sub-Tab Navigation -->
-        <div class="sub-tab-buttons">
-            <button onclick="showSubTab(0)">Chart</button>
-            <button onclick="showSubTab(1)">Log</button>
-            <button onclick="showSubTab(2)">Settings</button>
-            <button onclick="showSubTab(3)">Dashboard</button>
-        </div>
+        <table>
 
-        <!-- Sub-Tab 1: Real-Time Chart -->
-        <div class="sub-tab active">
-            <div style="width: 90%; height: 300px; margin: auto;">
-                <canvas id="realTimeChart"></canvas>
-            </div>
-        </div>
+            <tr class="title">
+                <th>Sensor</th>
+                <th>Parameter</th>
+                <th>Value</th>
+                <th>Unit</th>
+            </tr>
+            <tr class="bme680">
+                <td>BME680</td>
+                <td>Temp</td>
+                <td>{{json_client_temp}}</td>
+                <td>&#176;C</td>
+            </tr>
+            <tr class="bme680">
+                <td></td>
+                <td>Humi</td>
+                <td>{{json_client_pres}}</td>
+                <td>%</td>
+            </tr>
+            <tr class="bme680">
+                <td></td>
+                <td>Pres</td>
+                <td>{{json_client_humi}}</td>
+                <td>mbar</td>
+            </tr>
+            <tr class="bme680">
+                <td></td>
+                <td>AQ</td>
+                <td>{{json_client_airq}}</td>
+                <td>AQI</td>
+            </tr>
 
-        <!-- Sub-Tab 2: Live Log View -->
-        <div class="sub-tab">
-            <div id="logBox"
-                style="border: 1px solid #ccc; padding: 10px; width: 90%; height: 200px; margin: auto; overflow-y: scroll;">
-                <!-- Log entries will appear here -->
-            </div>
-        </div>
+        </table>
 
-        <!-- Sub-Tab 3: Settings Panel -->
-        <div class="sub-tab">
-            <form id="settingsForm" style="width: 90%; margin: auto;">
-                <h3>Settings Panel</h3>
-                <label for="refreshRate">Refresh Rate (sec): </label>
-                <input type="number" id="refreshRate" name="refreshRate" value="10">
-                <br><br>
-                <label><input type="checkbox" id="sensor1" checked> Sensor 1</label>
-                <br>
-                <label><input type="checkbox" id="sensor2" checked> Sensor 2</label>
-                <br><br>
-                <button type="button" onclick="alert('Settings Updated!')">Update Settings</button>
-                <!-- Clear Graph Button -->
-                <button type="button" onclick="clearGraph()">Clear Graph</button>
-                <!-- Export Graph Data Button -->
-                <button type="button" onclick="exportGraphData()">Export Graph Data</button>
-            </form>
-        </div>
-
-        <!-- Sub-Tab 4: Mini Dashboard (canvas-gauges) -->
-        <div class="sub-tab">
-            <div style="display: flex; justify-content: space-around; flex-wrap: wrap;">
-                <canvas data-type="radial-gauge" data-width="200" data-height="200" data-units="°C" data-title="Temp"
-                    data-min-value="0" data-max-value="50" data-value="25" id="gaugeTemp"></canvas>
-                <canvas data-type="radial-gauge" data-width="200" data-height="200" data-units="%" data-title="Humidity"
-                    data-min-value="0" data-max-value="100" data-value="50" id="gaugeHumidity"></canvas>
-                <canvas data-type="radial-gauge" data-width="200" data-height="200" data-units="ppm" data-title="CO2"
-                    data-min-value="0" data-max-value="2000" data-value="400" id="gaugeCO2"></canvas>
-            </div>
-            <script>
-                // Update the gauges randomly every 5 seconds
-                setInterval(() => {
-                    const gaugeTemp = document.gauges.get('gaugeTemp');
-                    gaugeTemp.value = (20 + Math.random() * 10).toFixed(2);
-                    const gaugeHumidity = document.gauges.get('gaugeHumidity');
-                    gaugeHumidity.value = (40 + Math.random() * 20).toFixed(2);
-                    const gaugeCO2 = document.gauges.get('gaugeCO2');
-                    gaugeCO2.value = (400 + Math.random() * 100).toFixed(0);
-                }, 5000);
-            </script>
-        </div>
     </div>
 </body>
 
